@@ -1,0 +1,444 @@
+[package]
+name = "audex-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+audex = { path = "..", features = ["async", "serde"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "io-util"] }
+tempfile = "3.0"
+arbitrary = { version = "1", features = ["derive"] }
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[profile.release]
+debug = 1
+
+# =============================================================================
+# Sync targets — one per format + auto-detect + structured ID3
+# =============================================================================
+
+[[bin]]
+name = "fuzz_auto_detect"
+path = "fuzz_targets/fuzz_auto_detect.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_auto_detect_ext"
+path = "fuzz_targets/fuzz_auto_detect_ext.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_flac"
+path = "fuzz_targets/fuzz_flac.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_mp4"
+path = "fuzz_targets/fuzz_mp4.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_id3"
+path = "fuzz_targets/fuzz_id3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_ogg"
+path = "fuzz_targets/fuzz_ogg.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_asf"
+path = "fuzz_targets/fuzz_asf.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_mp3"
+path = "fuzz_targets/fuzz_mp3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_apev2"
+path = "fuzz_targets/fuzz_apev2.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_aac"
+path = "fuzz_targets/fuzz_aac.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_ac3"
+path = "fuzz_targets/fuzz_ac3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_aiff"
+path = "fuzz_targets/fuzz_aiff.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_wave"
+path = "fuzz_targets/fuzz_wave.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_dsf"
+path = "fuzz_targets/fuzz_dsf.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_dsdiff"
+path = "fuzz_targets/fuzz_dsdiff.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_musepack"
+path = "fuzz_targets/fuzz_musepack.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_wavpack"
+path = "fuzz_targets/fuzz_wavpack.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_monkeysaudio"
+path = "fuzz_targets/fuzz_monkeysaudio.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_tak"
+path = "fuzz_targets/fuzz_tak.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_trueaudio"
+path = "fuzz_targets/fuzz_trueaudio.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_optimfrog"
+path = "fuzz_targets/fuzz_optimfrog.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_smf"
+path = "fuzz_targets/fuzz_smf.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_oggvorbis"
+path = "fuzz_targets/fuzz_oggvorbis.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_oggflac"
+path = "fuzz_targets/fuzz_oggflac.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_oggopus"
+path = "fuzz_targets/fuzz_oggopus.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_oggspeex"
+path = "fuzz_targets/fuzz_oggspeex.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_oggtheora"
+path = "fuzz_targets/fuzz_oggtheora.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_easyid3"
+path = "fuzz_targets/fuzz_easyid3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_easymp4"
+path = "fuzz_targets/fuzz_easymp4.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_easymp3"
+path = "fuzz_targets/fuzz_easymp3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_id3_structured"
+path = "fuzz_targets/fuzz_id3_structured.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_id3_writer_ops"
+path = "fuzz_targets/fuzz_id3_writer_ops.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_mp4_writer_ops"
+path = "fuzz_targets/fuzz_mp4_writer_ops.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_tag_budget"
+path = "fuzz_targets/fuzz_tag_budget.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_save_reload"
+path = "fuzz_targets/fuzz_save_reload.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_detect_format"
+path = "fuzz_targets/fuzz_detect_format.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_tagmap"
+path = "fuzz_targets/fuzz_tagmap.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_snapshot_deser"
+path = "fuzz_targets/fuzz_snapshot_deser.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_tagmap_conversion"
+path = "fuzz_targets/fuzz_tagmap_conversion.rs"
+test = false
+doc = false
+
+# =============================================================================
+# Async targets — mirror of every sync target
+# =============================================================================
+
+[[bin]]
+name = "fuzz_async_auto_detect"
+path = "fuzz_targets/fuzz_async_auto_detect.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_auto_detect_ext"
+path = "fuzz_targets/fuzz_async_auto_detect_ext.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_flac"
+path = "fuzz_targets/fuzz_async_flac.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_mp4"
+path = "fuzz_targets/fuzz_async_mp4.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_id3"
+path = "fuzz_targets/fuzz_async_id3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_ogg"
+path = "fuzz_targets/fuzz_async_ogg.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_asf"
+path = "fuzz_targets/fuzz_async_asf.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_mp3"
+path = "fuzz_targets/fuzz_async_mp3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_apev2"
+path = "fuzz_targets/fuzz_async_apev2.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_aac"
+path = "fuzz_targets/fuzz_async_aac.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_ac3"
+path = "fuzz_targets/fuzz_async_ac3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_aiff"
+path = "fuzz_targets/fuzz_async_aiff.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_wave"
+path = "fuzz_targets/fuzz_async_wave.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_dsf"
+path = "fuzz_targets/fuzz_async_dsf.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_dsdiff"
+path = "fuzz_targets/fuzz_async_dsdiff.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_musepack"
+path = "fuzz_targets/fuzz_async_musepack.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_wavpack"
+path = "fuzz_targets/fuzz_async_wavpack.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_monkeysaudio"
+path = "fuzz_targets/fuzz_async_monkeysaudio.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_tak"
+path = "fuzz_targets/fuzz_async_tak.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_trueaudio"
+path = "fuzz_targets/fuzz_async_trueaudio.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_optimfrog"
+path = "fuzz_targets/fuzz_async_optimfrog.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_smf"
+path = "fuzz_targets/fuzz_async_smf.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_oggvorbis"
+path = "fuzz_targets/fuzz_async_oggvorbis.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_oggflac"
+path = "fuzz_targets/fuzz_async_oggflac.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_oggopus"
+path = "fuzz_targets/fuzz_async_oggopus.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_oggspeex"
+path = "fuzz_targets/fuzz_async_oggspeex.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_oggtheora"
+path = "fuzz_targets/fuzz_async_oggtheora.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_easyid3"
+path = "fuzz_targets/fuzz_async_easyid3.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_easymp4"
+path = "fuzz_targets/fuzz_async_easymp4.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_async_easymp3"
+path = "fuzz_targets/fuzz_async_easymp3.rs"
+test = false
+doc = false

@@ -1,0 +1,75 @@
+[workspace]
+members = ["wasm"]
+
+[package]
+name = "audex"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["bakgio"]
+license = "MIT OR Apache-2.0"
+description = "Audio metadata reading and writing library with flexible I/O and easy wrappers"
+repository = "https://github.com/bakgio/audex"
+readme = "README.md"
+keywords = ["audio", "metadata", "tagging", "id3", "vorbis"]
+categories = ["multimedia::audio", "parser-implementations"]
+exclude = ["tests/*", "fuzz/*"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dependencies]
+thiserror = "2.0"
+byteorder = "1.5"
+globset = "0.4"
+flate2 = "1.1"
+base64 = "0.22"
+
+# Async dependencies (optional, enabled with "async" feature)
+tokio = { version = "1.50", features = ["fs", "io-util", "rt", "rt-multi-thread", "sync"], optional = true }
+async-trait = { version = "0.1", optional = true }
+futures = { version = "0.3", optional = true }
+
+# Tracing dependency (optional, enabled with "tracing" feature)
+tracing = { version = "0.1", optional = true }
+
+# Serde dependency (optional, enabled with "serde" feature)
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", features = ["raw_value"], optional = true }
+
+[features]
+default = []
+async = ["tokio", "async-trait", "futures"]
+tracing = ["dep:tracing"]
+serde = ["dep:serde", "dep:serde_json"]
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }
+
+[dev-dependencies]
+regex = "1.10"
+tempfile = "3.0"
+hex = "0.4"
+assert_matches = "1.5"
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+proptest = "1.4"
+gag = "1.0"
+parking_lot = "0.12"
+encoding_rs = "0.8"
+rand = "0.8"
+base64 = "0.22"
+tokio = { version = "1.50", features = ["full", "test-util"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+tracing = "0.1"
+serde_json = "1.0"
+toml = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+
+# LTO benefits both native and WASM release builds.
+# For WASM, also pass size optimization:
+#   cargo build --release --target wasm32-unknown-unknown \
+#       --config 'profile.release.opt-level="s"'
+[profile.release]
+lto = true

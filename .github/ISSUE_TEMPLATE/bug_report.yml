@@ -1,0 +1,136 @@
+name: Bug Report
+description: Report a bug or unexpected behavior in audex
+title: "[Bug]: "
+labels: ["C-bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill out the sections below so we can reproduce and fix the issue.
+
+  - type: input
+    id: audex-version
+    attributes:
+      label: Audex Version
+      description: |
+        Which version of audex are you using? You can find this in your `Cargo.toml` or by running:
+        ```
+        cargo tree -p audex
+        ```
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: rust-version
+    attributes:
+      label: Rust Version
+      description: |
+        Output of `rustc --version`.
+      placeholder: "rustc 1.85.0 (a7c28cbb0 2025-02-20)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform(s) does this occur on?
+      multiple: true
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - WebAssembly (Browser)
+        - WebAssembly (Node.js)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: features
+    attributes:
+      label: Enabled Features
+      description: Which optional features do you have enabled? (e.g. `async`, `serde`, `tracing`, or "default")
+      placeholder: "default"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: audio-format
+    attributes:
+      label: Audio Format
+      description: Which audio format is affected? Select all that apply.
+      multiple: true
+      options:
+        - MP3 (ID3v1/ID3v2)
+        - FLAC
+        - MP4 / M4A / M4B
+        - Ogg Vorbis
+        - Ogg Opus
+        - Ogg Speex
+        - Ogg FLAC
+        - Ogg Theora
+        - WAV
+        - AIFF
+        - WavPack
+        - "Monkey's Audio"
+        - Musepack
+        - OptimFROG
+        - TAK
+        - TrueAudio
+        - ASF / WMA
+        - DSF
+        - DSDIFF
+        - AAC
+        - SMF / MIDI
+        - Not format-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug. Include any error messages or panics.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce
+      description: |
+        Provide a minimal code example or steps that reproduce the behavior. If you can share the audio file that triggers the issue, please attach it or link to it.
+      placeholder: |
+        ```rust
+        let audio = audex::File::load("track.flac")?;
+        println!("{:?}", audio.info().sample_rate()); // Expected Some(44100), got None
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: |
+        Any other context that might be helpful: stack traces, related issues, audio file details (encoder, bitrate, etc.), or screenshots.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: duplicate-check
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched the existing issues and this has not been reported before
+          required: true
