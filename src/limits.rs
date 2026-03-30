@@ -26,7 +26,7 @@
 //! | AIFF/WAVE  | 256 MB (chunk data)              | ~4 GB (32-bit size)      |
 //!
 //! Separately, ASF saving uses a whole-file in-memory rewrite path guarded by
-//! [`MAX_IN_MEMORY_WRITER_FILE`], currently 512 MiB.
+//! [`MAX_IN_MEMORY_WRITER_FILE`](crate::limits::MAX_IN_MEMORY_WRITER_FILE), currently 512 MiB.
 //!
 //! The default limits (8 MB tags / 16 MB images) are safe for untrusted
 //! input. If you need to accept spec-legal files with very large metadata,

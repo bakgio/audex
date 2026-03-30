@@ -174,9 +174,9 @@ pub struct DiffOptions {
     /// `"songwriter"` (lowercased).  Default: `false`.
     ///
     /// **Note:** This option is only consumed by
-    /// [`diff_normalized_with_options`](crate::diff::diff_normalized_with_options).
-    /// The standard [`diff_with_options`](crate::diff::diff_with_options) and
-    /// [`diff_items_with_options`](crate::diff::diff_items_with_options) functions
+    /// [`diff_normalized_with_options`].
+    /// The standard [`diff_with_options`] and
+    /// [`diff_items_with_options`] functions
     /// ignore this field.
     pub normalize_custom_keys: bool,
 }

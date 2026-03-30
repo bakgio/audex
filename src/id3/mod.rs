@@ -578,7 +578,7 @@ pub fn clear<P: AsRef<std::path::Path>>(filething: P) -> Result<()> {
 ///
 /// This convenience function delegates to [`ID3Tags::load`]. At present, that
 /// lower-level file-loading path is still stubbed and returns
-/// [`AudexError::NotImplementedMethod`](crate::AudexError::NotImplementedMethod).
+/// [`AudexError::NotImplementedMethod`].
 /// For working file-based loading, use [`ID3::load_from_file`](crate::id3::ID3::load_from_file).
 ///
 /// # Parameters
