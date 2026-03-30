@@ -115,6 +115,7 @@ use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 /// These errors occur when Vorbis Comment data is malformed, contains invalid
 /// UTF-8 text, or violates the Vorbis Comment specification.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum VorbisError {
     /// The framing bit was not set or is invalid.
     ///
@@ -178,6 +179,7 @@ impl std::error::Error for VorbisError {}
 /// let mode = ErrorMode::Ignore;
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[non_exhaustive]
 pub enum ErrorMode {
     /// Fail immediately on any invalid data.
     ///
@@ -271,9 +273,9 @@ pub fn is_valid_key(key: &str) -> bool {
 /// # Key Normalization
 ///
 /// Per the Vorbis Comment specification, field names are case-insensitive. This
-/// implementation normalizes all keys to lowercase internally:
+/// implementation normalizes all keys to lowercase for internal lookup:
 /// - "TITLE", "Title", and "title" all map to the same field
-/// - Original case is not preserved
+/// - Original case is preserved in the `data` vector
 ///
 /// # Framing Bit
 ///
@@ -356,7 +358,7 @@ pub struct VComment {
     ///
     /// This string typically contains the name and version of the encoding
     /// software. For files created by this library, this defaults to
-    /// "audex {version}".
+    /// `"Audex {version}"`.
     pub vendor: String,
 
     /// The comment data as (key, value) pairs, preserving original order.
@@ -1560,14 +1562,13 @@ impl VComment {
             let comment_string = Self::decode_string(comment_bytes, errors)?;
 
             if let Some((key, value)) = comment_string.split_once('=') {
-                // Normalize key to lowercase per Vorbis specification
+                // Validate with lowercase key per spec, but preserve original case
                 let normalized_key = key.to_lowercase();
                 if is_valid_key(&normalized_key) {
                     let value_string = value.to_string();
-                    // Store normalized lowercase key for consistency
-                    self.data
-                        .push((normalized_key.clone(), value_string.clone()));
-                    // Update tags HashMap for efficient lookups
+                    // Store original case key in data for round-trip preservation
+                    self.data.push((key.to_string(), value_string.clone()));
+                    // Use lowercase key for tags HashMap (case-insensitive lookups)
                     self.tags
                         .entry(normalized_key)
                         .or_default()

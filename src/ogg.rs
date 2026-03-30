@@ -121,7 +121,7 @@
 //!     vec![6, 7, 8, 9, 10],
 //! ];
 //!
-//! // Convert to Ogg pages (sequence starts at 0, max page size 4096, wiggle room 2048)
+//! // Convert to Ogg pages (sequence starts at 0, target page size 4096, wiggle room 2048)
 //! let pages = OggPage::from_packets(packets, 0, 4096, 2048);
 //! println!("Created {} pages", pages.len());
 //! # Ok(())
@@ -287,8 +287,9 @@ pub struct OggPage {
     /// - Bit 2 (0x04): End of stream (EOS) flag
     pub header_type: u8,
 
-    /// Granule position - codec-specific time/position marker
-    /// Set to -1 for pages with incomplete packets
+    /// Granule position - codec-specific time/position marker.
+    /// A value of -1 means "no granule position set" per the Ogg spec.
+    /// When parsing from a file the raw header value is used as-is.
     pub position: i64,
 
     /// Bitstream serial number - unique identifier for this logical stream

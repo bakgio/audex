@@ -58,13 +58,14 @@ pub struct ID3 {
     pub filename: Option<String>,
     /// Parsed header from the loaded file
     _header: Option<ID3Header>,
-    /// ID3 version as (2, major, revision) — e.g. (2, 4, 0) for ID3v2.4
+    /// ID3 version as (2, major, revision) for ID3v2 — e.g. (2, 4, 0) for ID3v2.4.
+    /// Set to (1, 1, 0) when only an ID3v1 tag is present.
     _version: (u8, u8, u8),
     /// Raw byte data of frames not recognized by the parser
     pub unknown_frames: Vec<Vec<u8>>,
     /// Padding bytes found after the last frame in the loaded tag
     _padding: usize,
-    /// Legacy strict-parsing mode (deprecated, kept for compatibility)
+    /// Strict-parsing mode (defaults to `true`)
     pub pedantic: bool,
     /// Cached text values extracted from frames, enabling `Tags::get`
     /// to return borrowed `&[String]` slices. Kept in sync with the
@@ -142,10 +143,7 @@ impl Metadata for ID3 {
 }
 
 impl ID3 {
-    /// Create new ID3 instance
-    ///
-    /// If any arguments are given, the load is called with them. If no
-    /// arguments are given then an empty ID3 object is created.
+    /// Create a new empty ID3 instance
     pub fn new() -> Self {
         Self {
             tags: ID3Tags::new(),
@@ -456,8 +454,7 @@ impl ID3 {
     /// Get module name identifier
     pub const MODULE: &'static str = "audex.id3";
 
-    /// Get ID3 version
-    /// Returns ID3 tag version as a tuple (major, minor, revision)
+    /// Get ID3 version as (2, major, revision) -- e.g. (2, 4, 0) for ID3v2.4
     pub fn version(&self) -> (u8, u8, u8) {
         if let Some(ref header) = self._header {
             (2, header.major_version, header.revision)
@@ -489,7 +486,7 @@ impl ID3 {
         }
     }
 
-    /// Get total size of ID3 tag including header
+    /// Get total size of ID3 tag body (excludes the 10-byte header)
     pub fn size(&self) -> u32 {
         if let Some(ref header) = self._header {
             header.size
@@ -1311,7 +1308,7 @@ impl ID3 {
     /// # Arguments
     /// * `filething` - Optional path to save to (uses stored filename if None)
     /// * `v1` - ID3v1 save options (REMOVE, UPDATE, or CREATE)
-    /// * `v2_version` - ID3v2 version (2, 3, or 4)
+    /// * `v2_version` - ID3v2 version (3 or 4)
     /// * `v23_sep` - Optional separator for multi-value fields in v2.3
     ///
     /// # Returns

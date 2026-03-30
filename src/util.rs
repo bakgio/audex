@@ -19,49 +19,45 @@
 //!
 //! ### File I/O with Memory Fallback
 //!
-//! The loadfile system provides automatic memory fallback when filesystem operations fail:
+//! The loadfile system provides automatic memory fallback for eligible writable
+//! operations when filesystem operations fail:
 //!
 //! ```rust,ignore
-//! use audex::util::{loadfile_process, LoadFileOptions, loadfile_guard};
+//! use audex::util::{loadfile_process, LoadFileOptions};
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Basic usage for reading
 //! let file_thing = loadfile_process("path/to/file.txt", &LoadFileOptions::read_function())?;
 //!
-//! // Usage with automatic write-back via RAII guard
-//! let mut guard = loadfile_guard("path/to/file.txt", &LoadFileOptions::write_function())?;
-//! // Modifications to guard will be automatically written back on drop
-//!
-//! // Manual write-back control
-//! guard.write_back()?; // Explicit write-back
-//! let file_thing = guard.into_inner(); // Take ownership without write-back
+//! // Usage for writing
+//! let file_thing = loadfile_process("path/to/file.txt", &LoadFileOptions::write_function())?;
 //! # Ok(())
 //! # }
 //! ```
 //!
 //! The loadfile system automatically handles:
-//! - Memory fallback when filesystem operations fail (EOPNOTSUPP)
+//! - Memory fallback for eligible writable operations when filesystem operations fail (EOPNOTSUPP)
 //! - Write-back from memory to disk when needed
 //! - Proper error conversion from IO errors to AudexError
-//! - RAII-based resource management
+//!
+//! Pure read paths normally operate on the original file handle directly rather than
+//! falling back to an in-memory copy.
 //!
 //! ### Binary Data Processing
 //!
 //! Utilities for reading and writing binary data in various formats:
 //!
-//! ```rust,ignore
-//! use audex::util::{CData, BinaryCursor};
+//! ```rust,no_run
+//! use std::io::Cursor;
+//! use audex::util::BitReader;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! // Reading little-endian integers
+//! // Reading binary data with BitReader
 //! let data = vec![0x01, 0x02, 0x03, 0x04];
-//! let value = CData::uint32_le(&data)?;
-//! assert_eq!(value, 0x04030201);
-//!
-//! // Using BinaryCursor for structured parsing
-//! let mut reader = BinaryCursor::new(&data);
-//! let byte = reader.read_u8()?;
-//! let word = reader.read_u16_le()?;
+//! let mut cursor = Cursor::new(data);
+//! let mut reader = BitReader::new(&mut cursor)?;
+//! let byte = reader.read_bits(8)?;
+//! let nibble = reader.read_bits(4)?;
 //! # Ok(())
 //! # }
 //! ```
@@ -71,23 +67,18 @@
 //! Functions for handling various text encodings common in audio metadata:
 //!
 //! ```rust,ignore
-//! use audex::util::{decode_text, detect_bom, normalize_encoding};
+//! use audex::util::{decode_text, detect_bom};
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Decode text with encoding detection
-//! // Note: UTF-16 support depends on platform encoding availability
 //! let data = b"\xFF\xFEH\x00e\x00l\x00l\x00o\x00"; // UTF-16 LE with BOM
-//! let (text, _encoding, _bom) = decode_text(data, Some("utf-16"), "replace", false)?;
+//! let (text, _encoding, _bom) = decode_text(data, Some("utf-16le"), "replace", true)?;
 //! assert_eq!(text, "Hello");
 //!
 //! // Detect BOM (Byte Order Mark)
 //! if let Some((encoding, bom_size)) = detect_bom(data) {
 //!     println!("Detected encoding: {}, BOM size: {}", encoding, bom_size);
 //! }
-//!
-//! // Normalize encoding names (e.g., "UTF8" -> "utf-8")
-//! let normalized = normalize_encoding("UTF8");
-//! assert_eq!(normalized, "utf-8");
 //! # Ok(())
 //! # }
 //! ```
@@ -1800,6 +1791,7 @@ pub fn seek_end(fileobj: &mut File, offset: u64) -> Result<u64> {
 
 /// Input types for the openfile function
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum FileInput {
     /// A filesystem path to open
     Path(PathBuf),
@@ -1859,7 +1851,7 @@ impl Default for FallbackOptions {
 /// for problematic filesystems (like FUSE).
 ///
 /// # Arguments
-/// * `path_or_file` - Either a filesystem path or an existing file handle
+/// * `path_or_file` - A filesystem path, an existing file handle, or an in-memory buffer
 /// * `options` - File opening options (read/write/create permissions)
 /// * `fallback_options` - Configuration for memory fallback behavior
 ///
@@ -3302,6 +3294,7 @@ pub type MemoryFileThing = FileThing<Cursor<Vec<u8>>>;
 
 /// FileThing that can handle both file and memory operations
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum AnyFileThing {
     File(FileFileThing),
     Memory(MemoryFileThing),
@@ -3526,6 +3519,7 @@ impl<F: Seek> Seek for FileThing<F> {
 
 /// Different types of file arguments that can be passed
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum FileOrPath {
     File(File),
     Path(PathBuf),

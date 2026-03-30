@@ -222,8 +222,9 @@ impl ID3SaveConfig {
 /// Unsynchronization is an encoding scheme that ensures ID3v2 tag data
 /// never contains the byte sequence `0xFF 0xE0`–`0xFF 0xFF`, which could
 /// be mistaken for an MPEG sync word by naive decoders. It works by
-/// inserting a `0x00` byte after every `0xFF` byte during encoding, and
-/// removing those inserted bytes during decoding.
+/// inserting a `0x00` byte after `0xFF` when the following byte is
+/// `>= 0xE0` or `== 0x00`, or when `0xFF` is the last byte. Decoding
+/// reverses this by removing the inserted `0x00` bytes.
 pub struct Unsynch;
 
 impl Unsynch {
@@ -316,11 +317,10 @@ impl Unsynch {
         false
     }
 
-    /// Encode data with unsynchronization
     /// Encode data with unsynchronization.
     ///
-    /// Inserts `0x00` after every `0xFF` byte to prevent false MPEG sync
-    /// detection in legacy players.
+    /// Inserts `0x00` after `0xFF` when the next byte is `>= 0xE0`,
+    /// `== 0x00`, or when `0xFF` is at the end of the data.
     pub fn encode(value: &[u8]) -> Vec<u8> {
         // Split data on 0xFF bytes
         let fragments: Vec<&[u8]> = value.split(|&b| b == 0xFF).collect();
@@ -667,9 +667,11 @@ impl From<BitPaddedInt> for u32 {
 
 /// Remove unsynchronization from data.
 ///
-/// Returns an error if the data contains invalid unsynchronization sequences
-/// (e.g. 0xFF followed by 0xE0 or higher), rather than silently returning
-/// the raw undecoded data. Callers can then decide how to handle the failure.
+/// Delegates to [`Unsynch::decode`], which is intentionally lenient:
+/// non-conformant sequences (e.g. 0xFF followed by a byte >= 0xE0 without
+/// a protection byte) are passed through unchanged rather than rejected.
+/// The `Result` return type is kept for API compatibility but the current
+/// implementation always returns `Ok`.
 pub fn remove_unsynchronization(data: &[u8]) -> Result<Vec<u8>> {
     Unsynch::decode(data)
 }

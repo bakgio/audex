@@ -31,7 +31,8 @@
 //! - **Compression**: Lossy (improved perceptual coding)
 //! - **Bitrate**: 32 kbps to 6.144 Mbps
 //! - **Sample Rates**: 32 kHz, 44.1 kHz, 48 kHz
-//! - **Channels**: 1.0 to 7.1 (including height channels)
+//! - **Channels**: Core header layouts from 1.0 to 5.1 are parsed; dependent-stream
+//!   extensions such as full 7.1 layouts are not currently expanded here
 //! - **File Extension**: `.ec3`, `.eac3`
 //! - **MIME Type**: `audio/eac3`
 //!

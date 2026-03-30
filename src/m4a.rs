@@ -5,7 +5,7 @@
 //!
 //! # M4A vs MP4
 //!
-//! M4A is simply a renamed MP4 container specifically for audio files (no video track).
+//! M4A is a naming convention for MP4 containers that are typically used for audio files.
 //! Internally, this module uses the exact same implementation as the [`mp4`](crate::mp4) module.
 //! The file format, structure, and metadata handling are identical.
 //!

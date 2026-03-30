@@ -153,6 +153,7 @@ const SKIP_SIZE: &[(&[u8; 4], usize)] = &[(b"meta", 4)];
 /// assert!(!AtomType::Mdat.is_container());
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum AtomType {
     Unknown([u8; 4]),
     // File structure

@@ -41,10 +41,10 @@ const _V11: (u8, u8) = (1, 1);
 ///
 /// Represents the 10-byte header at the start of every ID3v2 tag. Contains
 /// the version number, flags (unsynchronization, extended header, experimental,
-/// footer), and total tag size. Used during both reading and writing.
+/// footer), and tag body size. Used during both reading and writing.
 #[derive(Debug, Clone)]
 pub struct ID3Header {
-    /// Version tuple (major, minor, revision)
+    /// Version tuple (2, major, revision) -- e.g. (2, 4, 0) for ID3v2.4
     pub version: (u8, u8, u8),
     /// Header flags
     pub flags: u8,
@@ -508,7 +508,7 @@ fn parse_size_as_bpi(bytes: &[u8]) -> Result<u32> {
 /// to preserve unknown frames or write an ID3v1 tag alongside ID3v2.
 #[derive(Debug, Clone)]
 pub struct ID3SaveConfig {
-    /// Target ID3v2 major version (2, 3, or 4)
+    /// Target ID3v2 major version (3 or 4; only v2.3 and v2.4 are supported for writing)
     pub v2_version: u8,
     /// Target ID3v2 minor version (usually 0)
     pub v2_minor: u8,
@@ -516,7 +516,9 @@ pub struct ID3SaveConfig {
     pub v23_sep: String,
     /// Multi-value separator byte for ID3v2.3 text frames
     pub v23_separator: u8,
-    /// Padding bytes to add after tag data (`None` = no padding)
+    /// Padding bytes to add after tag data.
+    /// `None` = no padding, `Some(n)` = add `n` bytes of padding.
+    /// Default: `Some(1024)`.
     pub padding: Option<usize>,
     /// Whether to merge compatible duplicate frames during save
     pub merge_frames: bool,
@@ -627,9 +629,13 @@ impl ExtendedID3Header {
 ///
 /// Stores ID3v2 frames in a sorted dictionary (`BTreeMap`) keyed by a
 /// hash-key string derived from the frame ID and disambiguating data
-/// (e.g. `"TIT2"`, `"TXXX:BARCODE"`, `"APIC:#0"`). Implements the
-/// [`Tags`] trait for unified tag access and the [`Metadata`] trait for
-/// file I/O.
+/// (e.g. `"TIT2"`, `"TXXX:BARCODE"`, `"APIC:Front Cover"`). Implements the
+/// [`Metadata`] trait for file I/O.
+///
+/// **Note:** The [`Tags`] trait is implemented, but `Tags::get()` always
+/// returns `None` on `ID3Tags` due to lifetime restrictions. Use the
+/// [`ID3`](crate::id3::ID3) wrapper for a working `Tags::get()`
+/// implementation backed by an internal values cache.
 ///
 /// Frames are stored as trait objects (`Box<dyn Frame>`) to support the
 /// many different frame types (text, URL, picture, comment, etc.).
@@ -653,7 +659,7 @@ pub struct ID3Tags {
     text_cache: RefCell<HashMap<String, Vec<String>>>,
     /// Tag flags from header (unsynchronization, extended header, experimental, footer)
     pub f_flags: u8,
-    /// Total tag size (including header)
+    /// Tag body size (excludes the 10-byte header)
     pub size: u32,
     /// Filename the tag was loaded from or will be saved to
     pub filename: Option<std::path::PathBuf>,
@@ -3308,7 +3314,7 @@ impl ID3Tags {
         crate::id3::file::clear(filething.as_ref(), clear_v1, clear_v2)
     }
 
-    /// Get the total size of the ID3 tag, including header
+    /// Get the estimated size of the serialized ID3 tag body (frames + padding), excluding the 10-byte header
     pub fn size(&self) -> usize {
         // Estimate size based on current frame data
         let config = ID3SaveConfig::default();

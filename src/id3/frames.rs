@@ -2,7 +2,7 @@
 //!
 //! This module contains comprehensive implementations for all ID3v2 frame types,
 //! providing full compatibility with ID3v2.2, ID3v2.3, and ID3v2.4 standards.
-//! Over 185+ frame types are supported, covering everything from basic text
+//! Over 160 frame types are supported, covering everything from basic text
 //! information to complex binary data like pictures and chapter markers.
 //!
 //! # Frame Type Categories
@@ -687,6 +687,7 @@ impl fmt::Display for ChannelType {
 /// This enum is used internally by the frame parsing/serialization pipeline
 /// and by [`FrameRegistry`] to decode raw frame bytes into structured data.
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub enum FrameData {
     /// Text information frames (T***)
     Text {
@@ -3880,8 +3881,8 @@ pub trait HasEncoding {
     /// Convert encoding if needed for target ID3 version
     ///
     /// This method checks if the current encoding is valid for the target
-    /// version and converts it if necessary. For ID3v2.3, prefers Latin1
-    /// when all text fits, otherwise falls back to UTF-16.
+    /// version and converts it if necessary. For ID3v2.3, UTF-8 and
+    /// UTF-16BE are converted to UTF-16 (with BOM).
     ///
     /// # Arguments
     /// * `version` - Target ID3 version as (major, minor) tuple
@@ -4237,7 +4238,7 @@ impl Frame for COMM {
 impl Default for COMM {
     fn default() -> Self {
         Self {
-            encoding: TextEncoding::default(), // Uses Utf8 per specs.rs
+            encoding: TextEncoding::default(), // Utf16 (see specs.rs #[default])
             language: *b"XXX",                 // Default language code
             description: String::new(),
             text: String::new(),
@@ -5326,7 +5327,7 @@ impl Frame for APIC {
 impl Default for APIC {
     fn default() -> Self {
         Self {
-            encoding: TextEncoding::default(), // Uses Utf8 per specs.rs
+            encoding: TextEncoding::default(), // Utf16 (see specs.rs #[default])
             mime: String::new(),
             type_: PictureType::CoverFront, // Default picture type
             desc: String::new(),
@@ -5470,7 +5471,7 @@ impl Frame for USLT {
 impl Default for USLT {
     fn default() -> Self {
         Self {
-            encoding: TextEncoding::default(), // Uses Utf8 per specs.rs
+            encoding: TextEncoding::default(), // Utf16 (see specs.rs #[default])
             language: *b"XXX",                 // Default language code
             description: String::new(),
             text: String::new(),
@@ -7508,7 +7509,7 @@ impl Default for COMR {
 pub struct ENCR {
     /// Owner identifier (URL or email)
     pub owner: String,
-    /// Method symbol (must be > 0x80)
+    /// Method symbol (must be >= 0x80)
     pub method_symbol: u8,
     /// Encryption data
     pub data: Vec<u8>,
@@ -7580,7 +7581,7 @@ impl Default for ENCR {
 pub struct GRID {
     /// Owner identifier (URL or email)
     pub owner: String,
-    /// Group symbol (must be > 0x80)
+    /// Group symbol (must be >= 0x80)
     pub group_symbol: u8,
     /// Group data
     pub data: Vec<u8>,

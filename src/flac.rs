@@ -36,7 +36,7 @@
 //!     println!("Sample rate: {} Hz", flac.info.sample_rate);
 //!     println!("Bit depth: {} bits", flac.info.bits_per_sample);
 //!     println!("Channels: {}", flac.info.channels);
-//!     println!("Duration: {:?}", flac.info.total_samples);
+//!     println!("Total samples: {}", flac.info.total_samples);
 //!
 //!     // Read Vorbis Comment tags using the Tags trait
 //!     if let Some(ref tags) = flac.tags {
@@ -127,7 +127,7 @@ use std::time::Duration;
 ///
 /// # Examples
 ///
-/// ```
+/// ```no_run
 /// use audex::flac::{FLAC, FLACParseOptions};
 ///
 /// // Use strict parsing (less forgiving)
@@ -139,7 +139,9 @@ use std::time::Duration;
 ///     ..Default::default()
 /// };
 ///
-/// let flac = FLAC::with_options(options);
+/// // Load a file with custom options
+/// let flac = FLAC::from_file_with_options("audio.flac", options)?;
+/// # Ok::<(), audex::AudexError>(())
 /// ```
 ///
 /// # Default Behavior
@@ -253,6 +255,7 @@ pub struct FLACError {
 /// issues (invalid headers) to data corruption (oversized blocks) to
 /// partial successes where some blocks failed but others loaded.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum FLACErrorKind {
     /// The FLAC file header is invalid or missing.
     ///
@@ -3835,7 +3838,7 @@ pub struct FLACStreamInfo {
 
     /// Bits per sample (bit depth)
     ///
-    /// Valid range: 4 to 32 bits per sample.
+    /// Valid range: 1 to 32 bits per sample.
     /// Common values: 16 (CD quality), 24 (high-resolution), 32 (float or int).
     pub bits_per_sample: u16,
 

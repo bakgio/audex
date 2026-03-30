@@ -8,11 +8,10 @@
 //! File structure:
 //! - FRM8 chunk (root container)
 //! - FVER chunk (format version)
-//! - PROP chunk (properties container)
-//!   SND chunk (sound properties)
-//!   FS chunk (sample rate)
-//!   CHNL chunk (channel configuration)
-//!   CMPR chunk (compression type)
+//! - PROP chunk (properties container, form type "SND ")
+//!   - FS chunk (sample rate)
+//!   - CHNL chunk (channel configuration)
+//!   - CMPR chunk (compression type)
 //! - DSD/DST chunk (audio data)
 
 use crate::tags::PaddingInfo;

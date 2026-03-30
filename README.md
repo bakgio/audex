@@ -32,12 +32,12 @@
 
 ```toml
 [dependencies]
-audex = "0.1.0"
+audex = "0.2.0"
 
 # With optional features:
-# audex = { version = "0.1.0", features = ["async"] }
-# audex = { version = "0.1.0", features = ["serde"] }
-# audex = { version = "0.1.0", features = ["tracing"] }
+# audex = { version = "0.2.0", features = ["async"] }
+# audex = { version = "0.2.0", features = ["serde"] }
+# audex = { version = "0.2.0", features = ["tracing"] }
 ```
 
 ## Feature Flags

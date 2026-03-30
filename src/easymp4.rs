@@ -193,6 +193,7 @@ use std::path::Path;
 
 /// Key mapping types for different kinds of metadata values
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum KeyType {
     /// Text values (strings)  
     Text,
@@ -1032,9 +1033,14 @@ impl FileType for EasyMP4 {
     /// Creates a new empty tag structure if none exists. If tags already exist,
     /// returns an error.
     ///
+    /// Note: the inherent method `EasyMP4::add_tags()` returns
+    /// `AudexError::ParseError` on failure. This trait method returns
+    /// `AudexError::InvalidOperation` and is reached via
+    /// `FileType::add_tags(&mut mp4)`.
+    ///
     /// # Errors
     ///
-    /// Returns `AudexError::ParseError` if tags already exist.
+    /// Returns `AudexError::InvalidOperation` if tags already exist.
     ///
     /// # Examples
     ///
@@ -1043,10 +1049,9 @@ impl FileType for EasyMP4 {
     /// use audex::FileType;
     ///
     /// let mut mp4 = EasyMP4::load("song.m4a")?;
-    /// // Add tags if they don't exist
-    /// let _ = mp4.add_tags(); // Will error if tags exist, which is fine
-    /// mp4.set("title", vec!["My Song".to_string()])?;
-    /// mp4.save()?;
+    /// if mp4.tags().is_none() {
+    ///     mp4.add_tags()?;
+    /// }
     /// # Ok::<(), audex::AudexError>(())
     /// ```
     fn add_tags(&mut self) -> Result<()> {

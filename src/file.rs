@@ -66,13 +66,14 @@
 //!    - MP4/M4A: "ftyp" atom
 //!    - And more...
 //!
-//! 2. **Extension Matching**: Falls back to file extension when headers are ambiguous
+//! 2. **Extension Matching**: Adds to the score when the file extension matches a known format
 //!
-//! 3. **Content Analysis**: Some formats require deeper inspection
+//! 3. **Content Analysis**: Some formats add further score from deeper inspection
 //!
 //! Each format provides a scoring function that returns a confidence level as an `i32`.
-//! Higher scores indicate higher confidence. The format with the highest positive
-//! score is selected for loading.
+//! Higher scores indicate higher confidence. The library evaluates the registered
+//! formats, sums their scoring factors, and selects the highest positive score for
+//! loading.
 //!
 //! ```no_run
 //! # fn main() -> Result<(), audex::AudexError> {
@@ -149,7 +150,7 @@
 //!
 //! ### Dynamic Type (File) - Method-Based Access
 //!
-//! The [`File`] type (a factory struct whose `load()` returns `Result<``DynamicFileType``>`)
+//! The [`File`] type (a factory struct whose `load()` returns `Result<DynamicFileType>`)
 //! provides method-based access with a uniform interface regardless of the underlying format:
 //!
 //! ```no_run

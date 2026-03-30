@@ -62,19 +62,21 @@
 //! ## Reading Tags
 //!
 //! ```no_run
-//! use audex::id3::{ID3Tags, load};
+//! use audex::id3::ID3;
 //!
 //! // Load ID3 tags from a file
-//! let tags = load("song.mp3").unwrap();
+//! let id3 = ID3::load_from_file("song.mp3").unwrap();
 //!
 //! // Get text frames
-//! let title_frames = tags.getall("TIT2");
+//! let title_frames = id3.tags.getall("TIT2");
 //! if let Some(title) = title_frames.first() {
-//!     println!("Title: {}", title.description());
+//!     if let Some(values) = title.text_values() {
+//!         println!("Title: {}", values.join("; "));
+//!     }
 //! }
 //!
 //! // Get all frames of a certain type
-//! for frame in tags.getall("COMM") {
+//! for frame in id3.tags.getall("COMM") {
 //!     println!("Comment: {}", frame.description());
 //! }
 //! ```
@@ -151,19 +153,21 @@
 //! ## Modifying Existing Tags
 //!
 //! ```no_run
-//! use audex::id3::load;
+//! use audex::id3::ID3;
 //!
 //! // Load existing tags
-//! let mut tags = load("song.mp3").unwrap();
+//! let mut id3 = ID3::load_from_file("song.mp3").unwrap();
 //!
 //! // Remove all frames of a specific type
-//! tags.delall("TIT2");
+//! id3.tags.delall("TIT2");
 //!
 //! // Add new value
-//! tags.add_text_frame("TIT2", vec!["New Title".to_string()]).unwrap();
+//! id3.tags
+//!     .add_text_frame("TIT2", vec!["New Title".to_string()])
+//!     .unwrap();
 //!
 //! // Save changes
-//! tags.save("song.mp3", 1, 4, None, None).unwrap();
+//! id3.save().unwrap();
 //! ```
 //!
 //! # Advanced Features
@@ -198,11 +202,12 @@
 //! Operations return `Result<T, AudexError>` for proper error handling:
 //!
 //! ```no_run
-//! use audex::id3::load;
+//! use audex::id3::ID3;
 //!
-//! match load("song.mp3") {
-//!     Ok(tags) => {
+//! match ID3::load_from_file("song.mp3") {
+//!     Ok(id3) => {
 //!         // Process tags
+//!         let _ = id3.tags.getall("TIT2");
 //!     }
 //!     Err(e) => {
 //!         eprintln!("Failed to load tags: {}", e);
@@ -569,31 +574,28 @@ pub fn clear<P: AsRef<std::path::Path>>(filething: P) -> Result<()> {
     ID3Tags::clear_file(filething, true, true)
 }
 
-/// Load ID3 tags from a file
+/// Load ID3 tags from a file.
 ///
-/// Reads and parses ID3v2 tags from the specified audio file. Supports all
-/// ID3v2 versions (2.2, 2.3, and 2.4) and automatically detects the version.
+/// This convenience function delegates to [`ID3Tags::load`]. At present, that
+/// lower-level file-loading path is still stubbed and returns
+/// [`AudexError::NotImplementedMethod`].
+/// For working file-based loading, use [`ID3::load_from_file`](crate::id3::ID3::load_from_file).
 ///
 /// # Parameters
 ///
 /// * `filething` - Path to the audio file to read tags from
 ///
-/// # Returns
-///
-/// Returns an `ID3Tags` instance containing all parsed frames, or an error
-/// if the file cannot be read or contains invalid tag data.
-///
 /// # Examples
 ///
 /// ```no_run
-/// use audex::id3::load;
+/// // Preferred approach — use ID3 directly:
+/// use audex::id3::ID3;
 ///
-/// // Load tags from file
-/// let tags = load("song.mp3").unwrap();
-///
-/// // Access frames
-/// for frame in tags.getall("TIT2") {
-///     println!("Title: {}", frame.description());
+/// let id3 = ID3::load_from_file("song.mp3").unwrap();
+/// for frame in id3.tags.getall("TIT2") {
+///     if let Some(values) = frame.text_values() {
+///         println!("Title: {}", values.join("; "));
+///     }
 /// }
 /// ```
 pub fn load<P: AsRef<std::path::Path>>(filething: P) -> Result<ID3Tags> {
@@ -610,14 +612,14 @@ pub mod util;
 /// ID3v2 version constants
 ///
 /// This module provides constants for the supported ID3v2 versions.
-/// Each constant is a tuple of (minor_version, revision) values.
+/// Each constant is a tuple of (major_version, revision) values.
 pub mod version {
     /// ID3v2.2.0 version identifier
     ///
     /// Legacy format with 3-character frame IDs. Limited features but
     /// maximum compatibility with very old players.
     ///
-    /// Format: (minor_version=2, revision=0)
+    /// Format: (major_version=2, revision=0)
     pub const ID3V22: (u8, u8) = (2, 0);
 
     /// ID3v2.3.0 version identifier
@@ -625,7 +627,7 @@ pub mod version {
     /// Most widely supported ID3v2 version. 4-character frame IDs,
     /// good balance of features and compatibility.
     ///
-    /// Format: (minor_version=3, revision=0)
+    /// Format: (major_version=3, revision=0)
     pub const ID3V23: (u8, u8) = (3, 0);
 
     /// ID3v2.4.0 version identifier
@@ -633,7 +635,7 @@ pub mod version {
     /// Latest ID3v2 standard with full UTF-8 support, improved date handling,
     /// and additional features. Used as default for new tags.
     ///
-    /// Format: (minor_version=4, revision=0)
+    /// Format: (major_version=4, revision=0)
     pub const ID3V24: (u8, u8) = (4, 0);
 }
 
@@ -645,8 +647,9 @@ pub mod flags {
     /// Unsynchronization flag (bit 7)
     ///
     /// Indicates that unsynchronization has been applied to prevent false
-    /// MPEG sync signals within the tag data. When set, all 0xFF bytes
-    /// followed by bytes >= 0xE0 have a 0x00 byte inserted between them.
+    /// MPEG sync signals within the tag data. When set, 0x00 is inserted
+    /// after any 0xFF that is followed by a byte >= 0xE0 or == 0x00, and
+    /// after any trailing 0xFF at the end of the data.
     pub const UNSYNCHRONIZATION: u8 = 0x80;
 
     /// Extended header flag (bit 6)

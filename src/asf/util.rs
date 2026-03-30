@@ -10,6 +10,7 @@ use thiserror::Error;
 
 /// ASF-specific error types for parsing and validation failures
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub enum ASFError {
     /// Data within an ASF object is invalid or malformed
     InvalidData(String),
@@ -36,6 +37,7 @@ impl std::error::Error for ASFError {}
 
 /// Comprehensive ASF utility error types
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum ASFUtilError {
     #[error("Invalid GUID format: {0}")]
     InvalidGuid(String),

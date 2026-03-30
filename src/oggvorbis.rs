@@ -189,6 +189,7 @@ use tokio::io::{AsyncSeekExt, BufReader as TokioBufReader};
 /// }
 /// ```
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum OggVorbisError {
     #[error("Ogg Vorbis error: {0}")]
     General(String),
@@ -229,6 +230,7 @@ pub enum OggVorbisError {
 /// }
 /// ```
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum OggVorbisHeaderError {
     #[error("Header error: {0}")]
     InvalidHeader(String),
@@ -665,7 +667,7 @@ pub struct OggVorbis {
 /// # Fields
 ///
 /// - **`length`**: Total duration of the audio file
-/// - **`bitrate`**: Average bitrate in bits per second (calculated from file size and duration)
+/// - **`bitrate`**: Average bitrate in bits per second (derived from identification header fields)
 /// - **`sample_rate`**: Audio sample rate in Hz (typically 44100 or 48000)
 /// - **`channels`**: Number of audio channels (1=mono, 2=stereo, etc.)
 /// - **`serial`**: Ogg logical bitstream serial number (unique stream identifier)
@@ -677,7 +679,7 @@ pub struct OggVorbis {
 /// # Bitrate Information
 ///
 /// Vorbis uses variable bitrate (VBR) encoding by default. The bitrate fields provide hints:
-/// - **bitrate**: Actual average calculated from file
+/// - **bitrate**: Derived from the identification header's nominal/max/min bitrate fields
 /// - **nominal_bitrate**: Encoder's target quality setting
 /// - **max_bitrate/min_bitrate**: Bitrate constraints (often unused)
 ///

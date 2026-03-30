@@ -10,7 +10,7 @@
 //! - **Audio codecs**: AAC, ALAC (Apple Lossless), and other MPEG-4 audio formats
 //! - **Metadata**: iTunes-style tags using the `©` atoms and custom metadata
 //! - **Chapters**: Chapter markers for audiobooks and podcasts
-//! - **Artwork**: Embedded cover art (PNG, JPEG)
+//! - **Artwork**: Embedded cover art (commonly PNG/JPEG, with GIF/BMP support as well)
 //! - **Atom structure**: Full atom tree parsing and manipulation
 //!
 //! ## File Extensions
@@ -41,7 +41,7 @@
 //! // Load an M4A file
 //! let mut mp4 = MP4::load("song.m4a").unwrap();
 //!
-//! // Access audio information (fields are Option types)
+//! // Access audio information (most fields are Option types; codec/codec_description are String)
 //! if let Some(duration) = mp4.info.length {
 //!     println!("Duration: {:.2} seconds", duration.as_secs_f64());
 //! }

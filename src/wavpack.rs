@@ -16,7 +16,7 @@
 //!
 //! - **Sample Rates**: 6 kHz to 192 kHz
 //! - **Bit Depth**: 8, 16, 24, or 32 bits per sample
-//! - **Channels**: 1-2 (stereo), with multichannel support in version 5+
+//! - **Channels**: Currently parsed as mono or stereo by this implementation
 //! - **Special**: DSD (Direct Stream Digital) support
 //! - **File Extension**: `.wv` (main), `.wvc` (correction file for hybrid mode)
 //! - **MIME Type**: `audio/x-wavpack`

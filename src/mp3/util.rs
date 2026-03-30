@@ -477,19 +477,23 @@ pub struct LAMEHeader {
     /// was removed during encoding to improve compression.
     pub lowpass_filter: i32,
 
-    /// Encoding quality setting (0-9)
+    /// Encoding quality setting (0-9, or -1 if unknown)
     ///
     /// - `0`: Highest quality (slowest encoding)
     /// - `9`: Lowest quality (fastest encoding)
+    /// - `-1`: Unknown / not set (only from the `new()` code path;
+    ///   `from_bytes()` produces `0` when the VBR scale is unset)
     ///
     /// LAME's `-q` parameter.
     pub quality: i32,
 
-    /// VBR quality setting (0-9)
+    /// VBR quality setting (0-10, or -1 if unknown)
     ///
     /// For VBR modes, this indicates the target quality level:
     /// - `0`: Highest quality (~245 kbps average)
-    /// - `9`: Lowest quality (~65 kbps average)
+    /// - `9`-`10`: Lowest quality (~65 kbps average)
+    /// - `-1`: Unknown / not set (only from the `new()` code path;
+    ///   `from_bytes()` produces `0` when the VBR scale is unset)
     ///
     /// LAME's `-V` parameter.
     pub vbr_quality: i32,
@@ -576,7 +580,7 @@ pub struct LAMEHeader {
     /// Indicates which noise shaping algorithm was used (0-3 in LAME).
     pub noise_shaping: i32,
 
-    /// MP3 gain adjustment (-127 to 127)
+    /// MP3 gain adjustment (-128 to 127)
     ///
     /// Global gain adjustment applied to all audio. The actual gain factor
     /// is calculated as `2^(mp3_gain / 4)`.
@@ -631,7 +635,9 @@ impl LAMEHeader {
     ///
     /// NOTE: This method and `from_bytes()` both parse the same LAME header
     /// structure using different approaches (BitReader vs Cursor). Changes to
-    /// one must be mirrored in the other to keep them consistent.
+    /// one should be mirrored in the other. Caveat: when `vbr_scale < 0`,
+    /// `new()` keeps the default quality/vbr_quality of -1, while `from_bytes()`
+    /// sets them to 0.
     pub fn new(xing: &XingHeader, data: &[u8]) -> std::result::Result<Self, LAMEError> {
         if data.len() < 27 {
             return Err(LAMEError::new("Not enough data"));
@@ -879,8 +885,9 @@ impl LAMEHeader {
     /// Parse extended LAME header.
     ///
     /// NOTE: This method and `new()` both parse the same LAME header structure
-    /// using different approaches (Cursor vs BitReader). Changes to one must
-    /// be mirrored in the other to keep them consistent.
+    /// using different approaches (Cursor vs BitReader). Changes to one should
+    /// be mirrored in the other. Caveat: when `vbr_scale < 0`, `from_bytes()`
+    /// sets quality/vbr_quality to 0, while `new()` keeps the default of -1.
     pub fn from_bytes(data: &[u8], xing: &XingHeader) -> Result<Self> {
         // Skip the 20-byte version string to get to the extended data
         if data.len() < 20 + 27 {
@@ -1382,7 +1389,7 @@ impl XingHeader {
 ///
 /// # Differences from Xing/Info
 ///
-/// - **Location**: VBRI headers appear at a fixed offset (32 bytes) after the
+/// - **Location**: VBRI headers appear at a fixed offset (36 bytes) after the
 ///   first MPEG sync, while Xing headers appear at variable offsets.
 /// - **Encoder**: Used by Fraunhofer encoder; LAME uses Xing/Info headers.
 /// - **TOC Format**: VBRI uses a different table of contents structure with
@@ -1416,10 +1423,10 @@ pub struct VBRIHeader {
     /// Currently only version 1 is defined and supported.
     pub version: i32,
 
-    /// Audio quality indicator (0-100)
+    /// Audio quality indicator (0-65535)
     ///
     /// Higher values indicate higher quality encoding. Interpretation
-    /// is encoder-specific.
+    /// is encoder-specific. Stored as a 16-bit unsigned integer.
     pub quality: i32,
 
     /// Total file size in bytes (excluding ID3 tags)
@@ -2289,8 +2296,8 @@ const MIN_FRAME_SIZE: u32 = 24;
 
 /// Calculate frame size in bytes - matches specification implementation.
 ///
-/// Returns 0 if `sample_rate` is 0, since no valid frame can exist without
-/// a defined sample rate.
+/// Returns `MIN_FRAME_SIZE` (24) if `sample_rate` is 0, since no valid frame
+/// can exist without a defined sample rate.
 pub fn calculate_frame_size(
     version: MPEGVersion,
     layer: MPEGLayer,

@@ -20,7 +20,8 @@ type ID3v1FindResult = (
 
 /// Parsed ID3v1/v1.1 tag (128 bytes at end of file)
 ///
-/// All string fields are trimmed and null-terminated. Track number is
+/// All string fields are parsed from fixed-width, null-padded fields and returned
+/// as trimmed Rust strings. Track number is
 /// `Some` for ID3v1.1 tags and `None` for plain ID3v1 tags.
 #[derive(Debug, Clone)]
 pub struct ID3v1Tag {
@@ -159,7 +160,7 @@ impl ID3v1Tag {
         }
     }
 
-    /// Check if tag has any meaningful data
+    /// Check if tag has any meaningful data (ignores genre field)
     pub fn is_empty(&self) -> bool {
         self.title.is_empty()
             && self.artist.is_empty()
