@@ -48,7 +48,7 @@
 //! - **Multi-value fields**: Multiple values per tag
 //! - **UTF-8 encoding**: Full Unicode support
 //! - **Standard fields**: TITLE, ARTIST, ALBUM, DATE, DESCRIPTION, etc.
-//! - **Case-insensitive keys**: Normalized to uppercase
+//! - **Case-insensitive keys**: Normalized to lowercase
 //! - **Video-specific tags**: ENCODER, COPYRIGHT, LICENSE, etc.
 //!
 //! # Basic Usage

@@ -101,6 +101,19 @@ jobs:
         env:
           RUSTDOCFLAGS: -Dwarnings
 
+  semver:
+    name: Semver Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: dtolnay/rust-toolchain@efa25f7f19611383d5b0ccf2d1c8914531636bf9 # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+      - name: Install cargo-semver-checks
+        run: cargo install cargo-semver-checks --locked
+      - run: cargo semver-checks -p audex
+
   audit:
     name: Security Audit
     runs-on: ubuntu-latest

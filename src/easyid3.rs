@@ -217,6 +217,7 @@ pub struct EasyID3 {
 
 /// Custom error for EasyID3 key operations
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum EasyID3Error {
     /// The provided key name is not valid or cannot be mapped to an ID3 frame.
     #[error("Invalid key: {0}")]
@@ -499,7 +500,7 @@ impl EasyID3 {
     /// This method mutates a **global** registry shared by all `EasyID3`
     /// instances in the process. A registration on one instance immediately
     /// affects every other instance. If two threads register the same key
-    /// with different frame IDs, the last writer wins silently.
+    /// with different frame IDs, the second registration will fail with an error.
     ///
     /// For deterministic behavior, register all custom keys once during
     /// application startup before creating worker threads.
@@ -609,8 +610,8 @@ impl EasyID3 {
     /// # Global State Warning
     ///
     /// This method mutates a **global** registry shared by all `EasyID3`
-    /// instances in the process. See [`register_text_key`](Self::register_text_key)
-    /// for details on the implications of global-state mutation.
+    /// instances in the process. Unlike [`register_text_key`](Self::register_text_key),
+    /// this method silently overwrites any existing registration for the same key.
     ///
     /// # Arguments
     /// * `key` - The easy key name (e.g., "compatible_brands")

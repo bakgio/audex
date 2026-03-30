@@ -120,6 +120,7 @@ fn error_name(e: &audex::AudexError) -> String {
         audex::AudexError::ID3FrameTooShort { .. } => "ID3FrameTooShort",
         audex::AudexError::DepthLimitExceeded { .. } => "DepthLimitExceeded",
         audex::AudexError::InternalError(_) => "InternalError",
+        _ => "UnknownError",
     }
     .to_string()
 }

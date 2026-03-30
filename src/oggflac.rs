@@ -33,7 +33,7 @@
 //! - **Compression**: Lossless (bit-perfect reproduction)
 //! - **Sample Rates**: Up to 655,350 Hz
 //! - **Channels**: 1-8 channels
-//! - **Bit Depth**: 4-32 bits per sample
+//! - **Bit Depth**: 1-32 bits per sample
 //! - **File Extension**: `.oga` or `.ogg`
 //! - **MIME Type**: `audio/x-oggflac`
 //!
@@ -45,7 +45,7 @@
 //! - **Multi-value fields**: Multiple artists, genres, etc.
 //! - **UTF-8 encoding**: Full Unicode support
 //! - **Standard fields**: TITLE, ARTIST, ALBUM, DATE, TRACKNUMBER, etc.
-//! - **Case-insensitive keys**: Field names normalized to uppercase
+//! - **Case-insensitive keys**: Field names normalized to lowercase
 //! - **Embedded pictures**: Via METADATA_BLOCK_PICTURE field
 //!
 //! # Basic Usage
@@ -306,7 +306,7 @@ impl From<OggError> for AudexError {
 /// - **`max_blocksize`**: Maximum block size in samples (typically 16-65535)
 /// - **`sample_rate`**: Sample rate in Hz (1-655350 Hz)
 /// - **`channels`**: Number of audio channels (1-8)
-/// - **`bits_per_sample`**: Bits per sample (4-32 bits)
+/// - **`bits_per_sample`**: Bits per sample (1-32 bits)
 /// - **`total_samples`**: Total number of PCM samples in the stream
 /// - **`length`**: Duration of the audio calculated from total samples and sample rate
 /// - **`serial_number`**: Ogg logical stream serial number for this FLAC stream
@@ -349,7 +349,7 @@ pub struct OggFLACStreamInfo {
     pub sample_rate: u32,
     /// Number of audio channels (1-8)
     pub channels: u16,
-    /// Bits per sample (4-32)
+    /// Bits per sample (1-32)
     pub bits_per_sample: u16,
     /// Total number of PCM samples in the stream
     pub total_samples: u64,
@@ -578,7 +578,7 @@ impl StreamInfo for OggFLACStreamInfo {
 /// # Tag Format
 ///
 /// Vorbis Comments store metadata as UTF-8 key-value pairs:
-/// - Keys are case-insensitive (normalized to uppercase)
+/// - Keys are case-insensitive (normalized to lowercase)
 /// - Values are UTF-8 strings
 /// - Multiple values per key are supported
 /// - Common fields: TITLE, ARTIST, ALBUM, DATE, TRACKNUMBER, GENRE, etc.

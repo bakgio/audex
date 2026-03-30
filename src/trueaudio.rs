@@ -16,7 +16,7 @@
 //!
 //! - **Compression**: Lossless (bit-perfect reproduction)
 //! - **Sample Rates**: 8 kHz to 192 kHz (and higher)
-//! - **Bit Depth**: 8, 16, or 24 bits per sample
+//! - **Bit Depth**: 8, 16, 24, or 32 bits per sample
 //! - **Channels**: 1-8 channels
 //! - **Frame Size**: Fixed at 1.04 seconds of audio
 //! - **File Extension**: `.tta`
@@ -42,7 +42,7 @@
 //! // Access stream information
 //! println!("Sample Rate: {} Hz", tta.info.sample_rate);
 //!
-//! // TrueAudio supports both ID3 and APEv2 tags via the unified tags_mut() interface
+//! // tags_mut() returns ID3 tags when present (use assign_ape_tags() for APEv2)
 //! if let Some(tags) = tta.tags_mut() {
 //!     tags.set("TIT2", vec!["Song Title".to_string()]);
 //!     tags.set("TPE1", vec!["Artist Name".to_string()]);
@@ -187,6 +187,7 @@ impl TrueAudioStreamInfo {
 
 /// Tag types supported by TrueAudio
 #[derive(Debug)]
+#[non_exhaustive]
 #[allow(clippy::large_enum_variant)]
 pub enum TrueAudioTags {
     /// Default ID3 tags (like the ID3FileType)
@@ -209,7 +210,7 @@ impl TrueAudioTags {
         self.keys().is_empty()
     }
 
-    /// Set a tag value (unified interface for both ID3 and APE)
+    /// Set a tag value (APE tags only; returns error for ID3 tags)
     pub fn set(&mut self, key: &str, value: APEValue) -> Result<()> {
         match self {
             TrueAudioTags::ID3(_) => {
@@ -222,7 +223,7 @@ impl TrueAudioTags {
         }
     }
 
-    /// Get a tag value (unified interface)
+    /// Get a tag value (APE tags only; returns None for ID3 tags)
     pub fn get(&self, key: &str) -> Option<&APEValue> {
         match self {
             TrueAudioTags::ID3(_) => None, // ID3 tags don't use APEValue
@@ -230,7 +231,7 @@ impl TrueAudioTags {
         }
     }
 
-    /// Remove a tag (unified interface)
+    /// Remove a tag (APE tags only; returns error for ID3 tags)
     pub fn remove(&mut self, key: &str) -> Result<()> {
         match self {
             TrueAudioTags::ID3(_) => {
@@ -343,7 +344,10 @@ impl TrueAudio {
 
         if let Some(tags) = &self.tags {
             if !tags.keys().is_empty() {
-                output.push_str(" (with ID3 tags)");
+                match tags {
+                    TrueAudioTags::ID3(_) => output.push_str(" (with ID3 tags)"),
+                    TrueAudioTags::APE(_) => output.push_str(" (with APE tags)"),
+                }
             }
         }
 
@@ -545,9 +549,9 @@ impl TrueAudio {
 
     /// Save tags to the TrueAudio file asynchronously.
     ///
-    /// Writes the current APE tags back to the file. If the file has ID3 tags,
-    /// they will be converted and saved as APE tags (the async implementation
-    /// only supports APEv2 tag format).
+    /// Writes the current APE tags back to the file. The async implementation
+    /// only supports APEv2 tags; attempting to save ID3-backed tags returns an
+    /// error instead of converting them.
     ///
     /// # Returns
     /// A `Result` indicating success or an error
@@ -830,7 +834,10 @@ impl FileType for TrueAudio {
     /// Adds empty APEv2 tags to the file.
     ///
     /// Creates a new empty APE tag structure if none exists. If tags already exist,
-    /// returns an error. TrueAudio files typically use APE tags rather than ID3.
+    /// returns an error.
+    ///
+    /// Note: the inherent method `TrueAudio::add_tags()` creates ID3 tags instead.
+    /// This trait method is reached via `FileType::add_tags(&mut tta)`.
     ///
     /// # Errors
     ///
@@ -844,10 +851,11 @@ impl FileType for TrueAudio {
     ///
     /// let mut tta = TrueAudio::load("song.tta")?;
     /// if tta.tags.is_none() {
+    ///     // Inherent method creates ID3 tags
     ///     tta.add_tags()?;
+    ///     // Trait method creates APE tags instead:
+    ///     // FileType::add_tags(&mut tta)?;
     /// }
-    /// tta.set("title", vec!["My Song".to_string()])?;
-    /// tta.save()?;
     /// # Ok::<(), audex::AudexError>(())
     /// ```
     fn add_tags(&mut self) -> Result<()> {

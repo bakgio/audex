@@ -72,8 +72,8 @@ pub enum AtomDataType {
 
     /// Shift-JIS encoded text.
     ///
-    /// Legacy Japanese character encoding. Deprecated except for special
-    /// Japanese characters not representable in UTF-8.
+    /// Legacy Japanese character encoding. Retained only for backward
+    /// compatibility with older Japanese-market files.
     Sjis = 3,
 
     /// HTML formatted text.
@@ -122,7 +122,7 @@ pub enum AtomDataType {
 
     /// Duration in milliseconds.
     ///
-    /// Stored as a 32-bit integer.
+    /// Can be 32-bit or 64-bit integer.
     Duration = 16,
 
     /// Date and time in UTC.
@@ -455,7 +455,7 @@ impl std::ops::Deref for MP4FreeForm {
 ///
 /// # Fields
 ///
-/// - **`start`**: Chapter start position in seconds from the beginning of the file
+/// - **`start`**: Chapter start position in seconds from the beginning of playback
 /// - **`title`**: Human-readable chapter name or description
 ///
 /// # Examples
@@ -508,12 +508,13 @@ impl Chapter {
 /// # Structure
 ///
 /// - **`chapters`**: Ordered list of chapter markers with start times and titles
-/// - **`timescale`**: Optional timescale value from the movie header (used for time calculations)
+/// - **`timescale`**: Optional timescale value from the movie header
 /// - **`duration`**: Optional total duration from the movie header
 ///
 /// # Atom Location
 ///
 /// Chapters are stored in the `moov.udta.chpl` atom path within the MP4 container.
+/// The `moov.mvhd` atom is also required for loading chapters.
 ///
 /// # Examples
 ///
@@ -847,7 +848,7 @@ impl MP4Chapters {
 /// # Structure
 ///
 /// - **`tags`**: Standard iTunes metadata fields (©nam, ©ART, ©alb, etc.)
-/// - **`covers`**: Embedded cover artwork images (JPEG or PNG)
+/// - **`covers`**: Embedded cover artwork images (for example JPEG, PNG, GIF, or BMP)
 /// - **`freeforms`**: Custom freeform metadata for non-standard fields
 /// - **`failed_atoms`**: Raw data from atoms that couldn't be parsed
 ///
@@ -966,7 +967,7 @@ pub struct MP4Tags {
 }
 
 impl MP4Tags {
-    /// Create a new empty MP4Tags with Audex vendor tag
+    /// Create a new empty MP4Tags
     pub fn new() -> Self {
         Self::default()
     }
@@ -1632,8 +1633,8 @@ impl MP4Tags {
     ///
     /// This method reads the entire file into an in-memory `Vec`, then
     /// performs atom rewriting on a `Cursor` over that buffer. Peak memory
-    /// consumption is approximately **2x the file size** (original buffer
-    /// plus the modified copy). A size guard rejects files larger than
+    /// consumption is roughly one whole-file buffer plus temporary rewrite
+    /// allocations, not two independent full-file copies. A size guard rejects files larger than
     /// `crate::limits::MAX_IN_MEMORY_WRITER_FILE` before allocating. For large MP4
     /// files, prefer the file-path-based [`save`](Self::save) method which
     /// operates directly on the file handle and avoids buffering the entire
@@ -3454,7 +3455,6 @@ impl crate::tags::MetadataFields for MP4Tags {
 ///
 /// - **mp4a**: AAC (Advanced Audio Coding) - Most common
 /// - **alac**: Apple Lossless (ALAC)
-/// - **mp4v**: MPEG-4 Visual (video, not audio)
 /// - **ac-3**: Dolby Digital (AC-3)
 #[derive(Debug, Clone, Default, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -4004,7 +4004,7 @@ impl FileType for MP4 {
     ///
     /// # Errors
     ///
-    /// Returns `AudexError::ParseError` if tags already exist.
+    /// Returns `AudexError::InvalidOperation` if tags already exist.
     ///
     /// # Examples
     ///

@@ -15,7 +15,7 @@
 //!
 //! ## File Structure
 //!
-//! A DSF file consists of three chunks:
+//! A DSF file consists of three mandatory chunks and an optional tag:
 //! - **DSD chunk** (28 bytes): File signature, total size, and metadata offset
 //! - **fmt chunk**: Audio format details (sample rate, channels, block size)
 //! - **data chunk**: Interleaved DSD audio samples

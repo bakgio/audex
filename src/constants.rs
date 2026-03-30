@@ -1,12 +1,13 @@
 //! Constants used across the library, primarily ID3v1 genres
 //!
-//! This module provides the complete ID3v1 genre table standard and utilities
+//! This module provides the complete ID3v1 genre table and utilities
 //! for parsing and converting genre information across different tagging formats.
 //!
 //! # ID3v1 Genre System
 //!
-//! ID3v1 uses a single byte (0-255) to represent genres. The standard defines
-//! 192 genres (0-191), with some extensions adding more. This module provides
+//! ID3v1 uses a single byte (0-255) to represent genres. The original ID3v1
+//! specification defines 80 genres (0-79). Winamp later extended this to
+//! 192 genres (0-191), which became the de facto standard. This module provides
 //! the complete mapping between numeric IDs and genre names.
 //!
 //! # Usage Examples
@@ -79,12 +80,12 @@
 //!
 //! # Format-Specific Considerations
 //!
-//! - **ID3v1**: Must use numeric genre ID (0-255), stored as single byte
+//! - **ID3v1**: Must use numeric genre ID (0-191), stored as single byte (255 = unset)
 //! - **ID3v2**: Can use numeric ID, text, or hybrid format (e.g., "(17)Rock")
 //! - **Vorbis/FLAC**: Always freeform text, numeric IDs not used
 //! - **MP4/M4A**: Typically numeric for standard genres, can use custom text
 
-/// ID3v1 genre list - complete 192-entry table (indices 0-191)
+/// ID3v1 genre list - complete 192-entry Winamp-extended table (indices 0-191)
 pub const GENRES: &[&str] = &[
     // 0-9
     "Blues",

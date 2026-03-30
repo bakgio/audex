@@ -43,7 +43,7 @@
 //!
 //! // Read ID3 tags using the Tags trait
 //! if let Some(ref tags) = mp3.tags {
-//!     if let Some(title) = tags.get("TIT2") {
+//!     if let Some(title) = tags.get_text_values("TIT2") {
 //!         println!("Title: {:?}", title);
 //!     }
 //! }
@@ -400,8 +400,8 @@ pub enum MPEGVersion {
 pub enum MPEGLayer {
     /// MPEG Layer I
     ///
-    /// The simplest MPEG audio layer. Uses 384 samples per frame for MPEG-1
-    /// (192 for MPEG-2). Provides the lowest compression ratio but fastest
+    /// The simplest MPEG audio layer. Uses 384 samples per frame for all
+    /// MPEG versions. Provides the lowest compression ratio but fastest
     /// encoding/decoding. Rarely used in practice.
     Layer1,
 
@@ -415,8 +415,9 @@ pub enum MPEGLayer {
     /// MPEG Layer III (MP3)
     ///
     /// The most complex and widely-used MPEG audio layer. Uses 1152 samples
-    /// per frame. Provides the best compression ratio through advanced
-    /// psychoacoustic modeling and Huffman coding. This is the "MP3" format.
+    /// per frame for MPEG-1 and 576 for MPEG-2/2.5. Provides the best
+    /// compression ratio through advanced psychoacoustic modeling and
+    /// Huffman coding. This is the "MP3" format.
     Layer3,
 }
 

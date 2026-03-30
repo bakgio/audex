@@ -23,7 +23,7 @@ pub struct FrameHeader {
     pub size: u32,
     /// Frame flags parsed from the 2-byte flags field
     pub flags: FrameFlags,
-    /// ID3v2 version as (major, minor) — e.g. (4, 0) for v2.4
+    /// ID3v2 version as (2, major) — e.g. (2, 4) for v2.4, (2, 3) for v2.3
     pub version: (u8, u8),
     /// Whether the global unsynchronization flag is set on the tag header
     pub global_unsync: bool,

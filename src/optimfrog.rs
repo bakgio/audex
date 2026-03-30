@@ -4,7 +4,8 @@
 //! focused on achieving maximum compression ratios. OptimFROG specializes in reducing
 //! file sizes to the absolute minimum while maintaining bit-perfect audio restoration.
 //!
-//! **Note**: Only OptimFROG versions 4.5 and higher are supported.
+//! **Note**: The current parser reads OptimFROG stream headers without enforcing a
+//! minimum encoder version.
 //!
 //! # File Format
 //!

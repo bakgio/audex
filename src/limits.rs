@@ -12,18 +12,21 @@
 //!
 //! # Specification Compatibility
 //!
-//! The defaults are chosen to accommodate every format's hard specification
-//! ceiling so that valid files are never rejected:
+//! The per-format constants and default limits are summarized below.
+//! Note that some library ceilings are lower than the format specification
+//! allows; use [`ParseLimits::permissive()`] for files near those limits:
 //!
-//! | Format     | Spec tag ceiling          | Spec image ceiling   |
-//! |------------|---------------------------|----------------------|
-//! | ID3v2      | 256 MB (2²⁸ − 1 synchsafe) | same as tag        |
-//! | FLAC       | ~16 MB (2²⁴ − 1 per block) | ~16 MB (24-bit)    |
-//! | APEv2      | no hard spec limit        | same as item         |
-//! | Vorbis     | 10 MB per comment         | same as comment      |
-//! | MP4        | 256 MB (atom data buffer) | same as atom         |
-//! | AIFF/WAVE  | 256 MB (chunk data)       | same as chunk        |
-//! | ASF        | 64-bit object sizes       | same as object       |
+//! | Format     | Effective parse ceiling          | Spec ceiling             |
+//! |------------|----------------------------------|--------------------------|
+//! | ID3v2      | 256 MB (2²⁸ − 1 synchsafe)      | 256 MB (synchsafe)       |
+//! | FLAC       | ~16 MB (2²⁴ − 1 per block)       | ~16 MB (24-bit)          |
+//! | APEv2      | no hard limit                    | no hard spec limit       |
+//! | Vorbis     | 10 MB per comment                | ~4 GB (32-bit length)    |
+//! | MP4        | 256 MB (atom data buffer)        | ~unlimited (64-bit ext.) |
+//! | AIFF/WAVE  | 256 MB (chunk data)              | ~4 GB (32-bit size)      |
+//!
+//! Separately, ASF saving uses a whole-file in-memory rewrite path guarded by
+//! [`MAX_IN_MEMORY_WRITER_FILE`], currently 512 MiB.
 //!
 //! The default limits (8 MB tags / 16 MB images) are safe for untrusted
 //! input. If you need to accept spec-legal files with very large metadata,

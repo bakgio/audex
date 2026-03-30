@@ -53,7 +53,7 @@ use tokio::io::{AsyncSeekExt, AsyncWriteExt};
 pub struct AIFFChunk {
     /// 4-character chunk identifier (e.g., `"COMM"`, `"SSND"`, `"ID3 "`)
     pub id: String,
-    /// Size of the chunk as declared in the header (may include padding)
+    /// Total size of the chunk including the 8-byte header (ID + size fields)
     pub size: u32,
     /// Byte offset of the chunk header from the start of the file
     pub offset: u64,

@@ -50,10 +50,13 @@ pub use normalize::TagSystem;
 /// Canonical metadata field names that can be mapped across all tag formats.
 ///
 /// Each variant represents a semantic concept (e.g. "the track title") rather
-/// than a format-specific key, allowing lossless round-trip conversion between
-/// ID3v2 frames, Vorbis Comment keys, MP4 atoms, APEv2 keys, and ASF attributes.
+/// than a format-specific key, enabling conversion between ID3v2 frames,
+/// Vorbis Comment keys, MP4 atoms, APEv2 keys, and ASF attributes. Note that
+/// round-trip conversion may be lossy (e.g. ID3v2.3 TYER/TDAT merge into a
+/// single field, and not all formats map all fields).
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[non_exhaustive]
 pub enum StandardField {
     Title,
     Artist,
@@ -326,12 +329,12 @@ impl TagMap {
         self.custom.remove(key);
     }
 
-    /// Iterate over all standard fields and their values.
+    /// Return all standard fields and their values.
     pub fn standard_fields(&self) -> Vec<(&StandardField, &[String])> {
         self.fields.iter().map(|(k, v)| (k, v.as_slice())).collect()
     }
 
-    /// Iterate over all custom fields and their values.
+    /// Return all custom fields and their values.
     pub fn custom_fields(&self) -> Vec<(&str, &[String])> {
         self.custom
             .iter()
@@ -370,7 +373,7 @@ impl TagMap {
         }
     }
 
-    /// Returns true if the tag map contains no fields (standard or custom).
+    /// Returns true if the tag map contains no fields (standard, custom, or pictures).
     pub fn is_empty(&self) -> bool {
         self.fields.is_empty() && self.custom.is_empty() && self.pictures.is_empty()
     }
@@ -471,6 +474,7 @@ impl fmt::Display for ConversionReport {
 /// Reason a field was not written during tag conversion.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[non_exhaustive]
 pub enum SkipReason {
     /// The destination format has no equivalent field.
     UnsupportedByTarget,

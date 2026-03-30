@@ -1,7 +1,7 @@
 //! ReplayGain utility module for loudness normalization metadata.
 //!
-//! Provides a unified interface for reading and writing ReplayGain metadata
-//! across different audio formats (MP3, FLAC, Ogg Vorbis, Ogg Opus, etc.).
+//! Provides ReplayGain parsing, validation, and formatting helpers, plus
+//! helpers for formats that store ReplayGain in Vorbis-style comments.
 //!
 //! # Overview
 //!
@@ -41,11 +41,8 @@
 //! These formats use Vorbis Comment tags with standardized field names:
 //!
 //! ```ignore
-//! // Note: This example requires actual audio files on the filesystem.
-//! use audex::flac::FLAC;
 //! use audex::replaygain::{ReplayGainInfo, to_vorbis_comments};
-//!
-//! let mut flac = FLAC::load("song.flac")?;
+//! use std::collections::HashMap;
 //!
 //! // Create ReplayGain information
 //! let rg = ReplayGainInfo::with_both(
@@ -53,12 +50,12 @@
 //!     0.95,  // Track peak (0.0 to 1.0+)
 //!     -5.0,  // Album gain in dB
 //!     0.98,  // Album peak
-//! );
+//! )?;
 //!
-//! // Note: FLAC uses VCommentDict which may require conversion
-//! // to HashMap<String, Vec<String>> for this function
+//! let mut comments: HashMap<String, Vec<String>> = HashMap::new();
+//! to_vorbis_comments(&rg, &mut comments);
 //!
-//! flac.save()?;
+//! assert_eq!(comments["REPLAYGAIN_TRACK_GAIN"][0], "-3.50 dB");
 //! ```
 //!
 //! The following Vorbis Comment fields are used:
@@ -66,28 +63,23 @@
 //! - `REPLAYGAIN_TRACK_PEAK` - Track peak amplitude (e.g., "0.995117")
 //! - `REPLAYGAIN_ALBUM_GAIN` - Album gain in dB
 //! - `REPLAYGAIN_ALBUM_PEAK` - Album peak amplitude
-//! - `REPLAYGAIN_REFERENCE_LOUDNESS` - Reference level (usually 89.0 dB SPL)
+//! - `REPLAYGAIN_REFERENCE_LOUDNESS` - Reference level when explicitly stored
+//!   (usually 89.0 dB SPL)
 //!
 //! ## MP3 (ID3v2 TXXX Frames)
 //!
-//! ReplayGain can also be stored in ID3v2 tags using TXXX frames:
+//! ReplayGain values for ID3v2 TXXX frames can be formatted with these helpers:
 //!
 //! ```ignore
-//! // Note: This example requires actual audio files on the filesystem.
-//! use audex::mp3::MP3;
-//! use audex::id3::{ID3Tags, Frame};
 //! use audex::replaygain::{format_gain, format_peak};
-//! use audex::FileType;
 //!
-//! let mut mp3 = MP3::load("song.mp3")?;
+//! // Use these strings when creating TXXX frames such as
+//! // REPLAYGAIN_TRACK_GAIN and REPLAYGAIN_TRACK_PEAK.
+//! let track_gain_str = format_gain(-3.5_f32)?;  // "-3.50 dB"
+//! let track_peak_str = format_peak(0.95_f32)?;  // "0.950000"
 //!
-//! // Write ReplayGain as ID3v2 TXXX frames
-//! // Access ID3 tags and add UserText frames for ReplayGain
-//! // The format_gain and format_peak functions help format values correctly
-//! let track_gain_str = format_gain(-3.5);  // "-3.50 dB"
-//! let track_peak_str = format_peak(0.95);  // "0.950000"
-//!
-//! mp3.save()?;
+//! assert_eq!(track_gain_str, "-3.50 dB");
+//! assert_eq!(track_peak_str, "0.950000");
 //! ```
 //!
 //! # Advanced Examples
@@ -104,7 +96,7 @@
 //! // Get adjustment factor for playback
 //! if let Some(factor) = rg.track_adjustment_factor() {
 //!     println!("Multiply audio samples by {:.3} for normalization", factor);
-//!     // -3.5 dB = ~0.708x volume multiplier
+//!     // -3.5 dB = ~0.669x volume multiplier
 //! }
 //! ```
 //!
@@ -134,7 +126,7 @@
 //!     let rg = ReplayGainInfo::with_both(
 //!         track_gain, track_peak,
 //!         album_gain, album_peak,
-//!     );
+//!     )?;
 //!
 //!     // Note: Use ReplayGain info with format-specific tag implementations
 //! }
@@ -145,17 +137,16 @@
 //! Remove all ReplayGain information from a file:
 //!
 //! ```ignore
-//! // Note: This example requires actual audio files on the filesystem.
 //! use audex::replaygain::clear_vorbis_comments;
-//! use audex::oggvorbis::OggVorbis;
-//! use audex::FileType;
+//! use std::collections::HashMap;
 //!
-//! let mut vorbis = OggVorbis::load("song.ogg")?;
+//! let mut comments: HashMap<String, Vec<String>> = HashMap::from([
+//!     ("REPLAYGAIN_TRACK_GAIN".to_string(), vec!["-3.50 dB".to_string()]),
+//!     ("REPLAYGAIN_TRACK_PEAK".to_string(), vec!["0.950000".to_string()]),
+//! ]);
 //!
-//! // Note: clear_vorbis_comments works with HashMap<String, Vec<String>>
-//! // For OggVorbis tags (VCommentDict), use the Tags trait methods instead
-//!
-//! vorbis.save()?;
+//! clear_vorbis_comments(&mut comments);
+//! assert!(comments.is_empty());
 //! ```
 //!
 //! # Reference

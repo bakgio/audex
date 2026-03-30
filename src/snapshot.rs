@@ -13,8 +13,9 @@
 //! schema so that consumers do not need to understand every audio format.
 //!
 //! For lossless round-tripping that preserves format-specific fields (e.g.
-//! MP4 freeform atoms), use `to_snapshot_with_raw()` which also populates
-//! the `raw_tags` field with a JSON value of the underlying tag container.
+//! MP4 freeform atoms), use `to_snapshot_with_raw()` which attempts to populate
+//! the `raw_tags` field with a JSON value of the underlying tag container when
+//! that format supports raw-tag serialization.
 
 use std::collections::HashMap;
 
@@ -31,14 +32,13 @@ use std::collections::HashMap;
 ///
 /// # Deserialization safety
 ///
-/// The `Deserialize` impl enforces resource limits (maximum tag count,
-/// cumulative string size, and `raw_tags` structural bounds) regardless
-/// of how deserialization is invoked.  Callers do not need to use a
-/// special entry point -- `serde_json::from_str::<TagSnapshot>(input)`
-/// is safe for untrusted input up to the configured limits.
+/// The `Deserialize` impl enforces resource limits on the decoded structure
+/// (maximum tag count, cumulative string size, and `raw_tags` structural
+/// bounds) regardless of how deserialization is invoked.
 ///
-/// For an additional upfront byte-length check that rejects oversized
-/// payloads before any parsing occurs, see [`TagSnapshot::from_json_str`].
+/// For untrusted input, callers should still apply an outer transport/body-size
+/// limit. [`TagSnapshot::from_json_str`] adds an upfront byte-length check that
+/// rejects oversized payloads before parsing begins.
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct TagSnapshot {

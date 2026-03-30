@@ -68,9 +68,7 @@ pub fn clear<P: AsRef<Path>>(path: P) -> Result<()> {
 
 /// Remove tags from a file asynchronously
 ///
-/// Clear metadata from MP4 file using async I/O operations.
-/// Wraps the synchronous clear operation in a blocking task
-/// to prevent blocking the async runtime.
+/// Clear metadata from MP4 file using native async I/O operations.
 #[cfg(feature = "async")]
 pub async fn clear_async<P: AsRef<Path>>(path: P) -> Result<()> {
     use crate::mp4::atom::Atoms;

@@ -150,7 +150,7 @@
 //! ## APEv2 (APE, WavPack, Musepack)
 //! - Key-value items
 //! - Supports both text and binary values
-//! - Case-sensitive keys
+//! - Case-insensitive keys (original case preserved)
 //!
 //! # Padding Information
 //!
@@ -192,6 +192,7 @@ use std::path::Path;
 /// - **Low threshold**: 1 KiB + 0.1% of trailing data
 ///
 /// If current padding exceeds the high threshold, it's reduced to the low threshold.
+/// If current padding is non-negative and within the high threshold, it's kept as-is.
 /// If current padding is insufficient (negative), padding is added to reach the low threshold.
 ///
 /// # Examples
@@ -696,7 +697,7 @@ pub trait Tags {
 /// id3.set("TPE1", vec!["New Artist".to_string()]);
 ///
 /// // Save back to file
-/// id3.save_to_path(Some("song.mp3"))?;
+/// id3.save()?;
 /// # Ok(())
 /// # }
 /// ```

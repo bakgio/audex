@@ -171,7 +171,13 @@ pub struct DiffOptions {
     /// Strip format-specific prefixes from custom tag keys so that freeform
     /// tags can be compared across formats.  For example,
     /// `"id3:TXXX:Songwriter"` and `"vorbis:Songwriter"` both become
-    /// `"Songwriter"`.  Default: `false`.
+    /// `"songwriter"` (lowercased).  Default: `false`.
+    ///
+    /// **Note:** This option is only consumed by
+    /// [`diff_normalized_with_options`](crate::diff::diff_normalized_with_options).
+    /// The standard [`diff_with_options`](crate::diff::diff_with_options) and
+    /// [`diff_items_with_options`](crate::diff::diff_items_with_options) functions
+    /// ignore this field.
     pub normalize_custom_keys: bool,
 }
 
@@ -803,7 +809,7 @@ fn tag_map_to_items(map: &TagMap) -> Vec<(String, Vec<String>)> {
 ///
 /// `"id3:TXXX:Songwriter"`, `"vorbis:Songwriter"`,
 /// `"mp4:----:com.apple.itunes:Songwriter"`, `"ape:Songwriter"`, and
-/// `"asf:Songwriter"` all become `"Songwriter"`.
+/// `"asf:Songwriter"` all become `"songwriter"` (lowercased).
 fn tag_map_to_items_normalized(map: &TagMap) -> Vec<(String, Vec<String>)> {
     let mut items: Vec<(String, Vec<String>)> = Vec::new();
 

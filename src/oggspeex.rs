@@ -48,7 +48,7 @@
 //! - **Multi-value fields**: Multiple values per tag (e.g., multiple artists)
 //! - **UTF-8 encoding**: Full Unicode support for international text
 //! - **Standard fields**: TITLE, ARTIST, ALBUM, DATE, GENRE, DESCRIPTION, etc.
-//! - **Case-insensitive keys**: Field names normalized to uppercase
+//! - **Case-insensitive keys**: Field names normalized to lowercase
 //! - **Embedded pictures**: Via METADATA_BLOCK_PICTURE field
 //!
 //! # Basic Usage
@@ -334,7 +334,7 @@ impl From<SpeexError> for AudexError {
 /// - **`length`**: Duration of the audio calculated from final page granule position
 /// - **`channels`**: Number of audio channels (1 for mono, 2 for stereo)
 /// - **`sample_rate`**: Sample rate in Hz (8000, 16000, or 32000)
-/// - **`bitrate`**: Target bitrate in bps (-1 for VBR, 0+ for CBR)
+/// - **`bitrate`**: Target bitrate in bps (`None` for VBR/unknown, `Some(n)` for known bitrate)
 /// - **`serial`**: Ogg logical stream serial number
 ///
 /// # Speex-Specific Fields
@@ -344,7 +344,7 @@ impl From<SpeexError> for AudexError {
 /// - **`mode`**: Encoding mode (0=narrowband, 1=wideband, 2=ultra-wideband)
 /// - **`mode_bitstream_version`**: Bitstream version for the mode
 /// - **`nb_channels`**: Number of channels (duplicates `channels`)
-/// - **`nb_frames`**: Number of frames per packet
+/// - **`nb_frames`**: Number of frames (not parsed from the header; always 0)
 /// - **`frame_size`**: Frame size in samples
 /// - **`vbr`**: Variable bitrate flag (0=CBR, 1=VBR)
 /// - **`frames_per_packet`**: Frames bundled per Ogg packet
@@ -405,7 +405,7 @@ pub struct SpeexInfo {
     pub channels: u16,
     /// Sample rate in Hz (8000, 16000, or 32000)
     pub sample_rate: u32,
-    /// Bitrate in bps (-1 for VBR, 0+ for CBR)
+    /// Bitrate in bps (`None` for VBR/unknown, `Some(n)` for known bitrate)
     pub bitrate: Option<i32>,
     /// Ogg logical stream serial number
     pub serial: u32,
@@ -420,7 +420,7 @@ pub struct SpeexInfo {
     pub mode_bitstream_version: i32,
     /// Number of channels (same as `channels`)
     pub nb_channels: u32,
-    /// Number of frames (reserved, typically 0)
+    /// Number of frames (not parsed from the header; always 0)
     pub nb_frames: i32,
     /// Frame size in samples
     pub frame_size: u32,
@@ -649,7 +649,7 @@ impl StreamInfo for SpeexInfo {
 /// # Tag Format
 ///
 /// Vorbis Comments are UTF-8 key-value pairs:
-/// - Keys are case-insensitive (normalized to uppercase)
+/// - Keys are case-insensitive (normalized to lowercase)
 /// - Values are UTF-8 strings
 /// - Multiple values per key are supported
 /// - Common fields: TITLE, ARTIST, ALBUM, DATE, GENRE, DESCRIPTION, etc.

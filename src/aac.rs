@@ -39,8 +39,8 @@
 //!
 //! - **Lossy compression**: Smaller file sizes than lossless formats
 //! - **Profiles**: LC (Low Complexity), HE-AAC (High Efficiency), HE-AAC v2
-//! - **Sample rates**: 8 kHz to 96 kHz
-//! - **Channels**: Mono, stereo, or multichannel (up to 48 channels)
+//! - **Sample rates**: 7.35 kHz to 96 kHz
+//! - **Channels**: Mono, stereo, or multichannel (up to 8 channels via standard configurations)
 //! - **Bitrate**: Variable or constant (typically 128-320 kbps for music)
 //!
 //! ## Examples
@@ -554,9 +554,9 @@ impl ProgramConfigElement {
 ///
 /// # Fields
 ///
-/// - **`channels`**: Number of audio channels (1=mono, 2=stereo, up to 48 for multichannel)
+/// - **`channels`**: Number of audio channels (1=mono, 2=stereo, up to 8 via standard ADTS configurations)
 /// - **`length`**: Total duration of the audio file
-/// - **`sample_rate`**: Audio sampling rate in Hz (8000 to 96000)
+/// - **`sample_rate`**: Audio sampling rate in Hz (7350 to 96000)
 /// - **`bitrate`**: Average bitrate in bits per second
 /// - **`stream_type`**: Container format ("ADTS" or "ADIF")
 ///

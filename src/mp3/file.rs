@@ -54,7 +54,7 @@ use tokio::io::{AsyncReadExt, AsyncSeekExt};
 ///
 /// // Read ID3 tags if present
 /// if let Some(ref tags) = mp3.tags {
-///     if let Some(title) = tags.get("TIT2") {
+///     if let Some(title) = tags.get_text_values("TIT2") {
 ///         println!("Title: {:?}", title);
 ///     }
 /// }
@@ -119,20 +119,6 @@ pub struct MP3 {
 }
 
 impl MP3 {
-    /// Creates a new empty MP3 instance with default values.
-    ///
-    /// This creates an MP3 struct with default audio information and no tags.
-    /// Typically you would use [`MP3::from_file`] or [`MP3::load`](FileType::load) instead.
-    ///
-    /// # Returns
-    ///
-    /// Returns an MP3 instance with:
-    /// - Default (zero) audio information
-    /// - No tags
-    /// - No filename
-    ///
-    /// # Examples
-    ///
     /// Extract ReplayGain value from an RVA2 frame.
     /// Returns the gain (plain number) or peak as a string.
     fn get_rva2_replaygain(&self, track_type: &str, is_gain: bool) -> Option<Vec<String>> {
@@ -164,6 +150,11 @@ impl MP3 {
         None
     }
 
+    /// Creates a new empty MP3 instance with default values.
+    ///
+    /// This creates an MP3 struct with default audio information and no tags.
+    /// Typically you would use [`MP3::from_file`] or [`MP3::load`](FileType::load) instead.
+    ///
     /// ```
     /// use audex::mp3::MP3;
     ///
@@ -200,7 +191,9 @@ impl MP3 {
     /// - The file is not a valid MP3 file (no MPEG frame sync found)
     /// - The MPEG headers are corrupted or invalid
     ///
-    /// Note: Missing ID3 tags is not considered an error; the `tags` field will be `None`.
+    /// Note: missing ID3 tags are not considered an error; the `tags` field will be `None`.
+    /// The current implementation also treats ID3 parsing failures as `None` rather than
+    /// surfacing them separately.
     ///
     /// # Examples
     ///
@@ -216,7 +209,7 @@ impl MP3 {
     ///
     /// // Access tags via the Tags trait
     /// if let Some(tags) = &mp3.tags {
-    ///     if let Some(title) = tags.get("TIT2") {
+    ///     if let Some(title) = tags.get_text_values("TIT2") {
     ///         println!("Title: {:?}", title);
     ///     }
     /// }
@@ -260,7 +253,7 @@ impl MP3 {
     ///
     /// This method writes any changes made to the tags back to the file. Only the tags
     /// are modified; the audio data remains unchanged. By default, this:
-    /// - Creates ID3v2.3 tags if they don't exist
+    /// - Saves the current ID3 tags if `self.tags` is present
     /// - Updates existing ID3v1 tags or creates them if tags are present
     /// - Preserves the original file's audio data
     ///
@@ -322,7 +315,7 @@ impl MP3 {
     /// * `v2_version` - Target ID3v2 version:
     ///   - `3` = ID3v2.3 (default, most compatible)
     ///   - `4` = ID3v2.4 (newer features, less compatible)
-    /// * `v23_sep` - Separator for multi-value text frames in ID3v2.3 (default: null byte)
+    /// * `v23_sep` - Separator for multi-value text frames in ID3v2.3 (default: "/")
     ///
     /// # Returns
     ///
@@ -968,7 +961,7 @@ impl FileType for MP3 {
             // Check specific sync patterns that specification looks for
             if header.starts_with(&[0xFF, 0xF2]) ||  // MPEG-2 Layer III
                header.starts_with(&[0xFF, 0xF3]) ||  // MPEG-2 Layer III
-               header.starts_with(&[0xFF, 0xFA]) ||  // MPEG-2.5 Layer III
+               header.starts_with(&[0xFF, 0xFA]) ||  // MPEG-1 Layer III
                header.starts_with(&[0xFF, 0xFB])
             {
                 // MPEG-1 Layer III

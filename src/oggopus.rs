@@ -23,7 +23,7 @@
 //! ## Audio Characteristics
 //!
 //! - **Sample rate**: Always operates at 48 kHz internally (original rate preserved in metadata)
-//! - **Bitrate range**: 6 kbps to 510 kbps per channel
+//! - **Bitrate range**: 6 kbps to 510 kbps total
 //! - **Channels**: Mono, stereo, or multichannel (up to 255 channels)
 //! - **Frame sizes**: Flexible from 2.5ms to 60ms
 //! - **Hybrid codec**: Combines SILK (speech) and CELT (music) codecs
@@ -258,7 +258,7 @@ impl From<OpusError> for AudexError {
 /// - **`channels`**: Number of output channels (1=mono, 2=stereo, etc.)
 /// - **`sample_rate`**: Always 48000 Hz (Opus internally operates at 48 kHz)
 /// - **`pre_skip`**: Number of samples to discard from decoder output at start
-/// - **`version`**: Opus version (currently 1, only major version 0 supported)
+/// - **`version`**: Opus header version byte (e.g. 1 means major=0, minor=1)
 /// - **`gain`**: Output gain in Q7.8 dB format (divide by 256 to get dB)
 /// - **`channel_mapping_family`**: Channel mapping family (0=mono/stereo, 1=surround, 255=undefined)
 /// - **`stream_count`**: Number of encoded streams (for multichannel)
@@ -1010,7 +1010,7 @@ impl OpusTags {
 ///
 /// Ogg Opus uses the Ogg container format with Opus-encoded audio:
 /// - **Extension**: `.opus` (standard)
-/// - **MIME type**: `audio/opus`
+/// - **MIME type**: `audio/ogg` (or `audio/ogg; codecs=opus`)
 /// - **Codec**: Opus (hybrid SILK + CELT codec)
 /// - **Sample rate**: Always 48 kHz internally
 ///

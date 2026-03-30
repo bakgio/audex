@@ -290,13 +290,26 @@
 //! # APEv2 and ASF Tag Access
 //!
 //! Formats using APEv2 tags (Monkey's Audio, Musepack, WavPack, TAK,
-//! OptimFROG) and ASF/WMA files store tag values internally as `APEValue` and
-//! `ASFAttribute` types respectively, not as plain strings. Because of this, the
-//! unified `Tags::get()` trait method currently returns `None` for these formats.
-//! TrueAudio files may use either ID3v1/v2 or APEv2 tags; when APEv2 tags are
-//! present, the same limitation applies.
+//! OptimFROG) and ASF/WMA files store tag values internally as [`APEValue`](apev2::APEValue)
+//! and [`ASFAttribute`](asf::attrs::ASFAttribute) types respectively, not as plain strings.
+//! The `get()`, `set()`, `remove()`, and `keys()` methods on the file types
+//! handle conversion automatically, so the unified interface works across all
+//! formats:
 //!
-//! **To read tags from these formats**, use the native format-specific API:
+//! ```no_run
+//! use audex::wavpack::WavPack;
+//! use audex::FileType;
+//!
+//! let wv = WavPack::load("song.wv")?;
+//! // get() converts APEValue to Vec<String> automatically
+//! if let Some(values) = wv.get("Title") {
+//!     println!("Title: {}", values[0]);
+//! }
+//! # Ok::<(), audex::AudexError>(())
+//! ```
+//!
+//! For direct access to the underlying typed values (e.g., binary data in
+//! APEv2 or typed attributes in ASF), use the native format-specific API:
 //!
 //! ```no_run
 //! use audex::wavpack::WavPack;
@@ -304,7 +317,7 @@
 //!
 //! let wv = WavPack::load("song.wv")?;
 //! if let Some(ref tags) = wv.tags {
-//!     // Use the native APEv2 get() which returns Option<&APEValue>
+//!     // Native APEv2 get() returns Option<&APEValue>
 //!     if let Some(value) = tags.get("Title") {
 //!         println!("Title: {}", value.as_string().unwrap_or_default());
 //!     }
@@ -312,9 +325,11 @@
 //! # Ok::<(), audex::AudexError>(())
 //! ```
 //!
-//! Writing tags through `set()` works correctly for all formats, as the trait
-//! implementation converts `Vec<String>` to the appropriate internal type.
-//! The `keys()` method also works correctly for all formats.
+//! **Note:** The low-level [`Tags`] trait impl on [`APEv2Tags`](apev2::APEv2Tags)
+//! and [`ASFTags`](asf::attrs::ASFTags) returns `None` from `get()` because
+//! that trait returns `&[String]` which cannot reference the non-string
+//! internal storage. Always use the file-level methods (e.g., `WavPack::get()`,
+//! `ASF::get()`) for the converting interface.
 //!
 //! # Troubleshooting
 //!
@@ -470,6 +485,7 @@ pub mod wavpack;
 /// This enum covers all error conditions that can occur when loading, parsing,
 /// or saving audio files and their metadata.
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum AudexError {
     /// Standard I/O error (file not found, permission denied, etc.)
     #[error("IO error: {0}")]

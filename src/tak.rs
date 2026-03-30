@@ -16,8 +16,8 @@
 //!
 //! - **Compression**: Lossless (bit-perfect reproduction)
 //! - **Sample Rates**: Up to 384 kHz
-//! - **Bit Depth**: 8-24 bits per sample
-//! - **Channels**: 1-8 channels
+//! - **Bit Depth**: 8-39 bits per sample
+//! - **Channels**: 1-16 channels
 //! - **Compression Ratio**: Typically 40-60% of original size
 //! - **File Extension**: `.tak`
 //! - **MIME Type**: `audio/x-tak`
@@ -733,6 +733,11 @@ impl FileType for TAK {
     /// Creates a new empty tag structure if none exists. If tags already exist,
     /// returns an error.
     ///
+    /// Note: the inherent method `TAK::add_tags()` returns
+    /// `AudexError::TAKHeaderError` on failure. This trait method
+    /// returns `AudexError::InvalidOperation` and is reached via
+    /// `FileType::add_tags(&mut tak)`.
+    ///
     /// # Errors
     ///
     /// Returns `AudexError::InvalidOperation` if tags already exist.
@@ -747,8 +752,6 @@ impl FileType for TAK {
     /// if tak.tags.is_none() {
     ///     tak.add_tags()?;
     /// }
-    /// tak.set("title", vec!["My Song".to_string()])?;
-    /// tak.save()?;
     /// # Ok::<(), audex::AudexError>(())
     /// ```
     fn add_tags(&mut self) -> Result<()> {

@@ -901,7 +901,8 @@ where
 impl AudioFile {
     /// Embed cover art as an APIC frame (ID3-based formats only).
     ///
-    /// Accepts raw image bytes (JPEG or PNG) and a MIME type string.
+    /// Accepts raw image bytes and an image MIME type string (for example JPEG,
+    /// PNG, GIF, BMP, or other `image/*` types).
     /// Returns an error for non-ID3 formats.
     #[wasm_bindgen(js_name = "setCoverArt")]
     pub fn set_cover_art(&mut self, data: &[u8], mime_type: &str) -> Result<(), JsValue> {

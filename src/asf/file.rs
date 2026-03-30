@@ -33,11 +33,11 @@ pub struct ASFInfo {
     pub length: f64,
     /// Audio sample rate in Hz (from StreamProperties format data)
     pub sample_rate: u32,
-    /// Average bitrate in bits per second (from FileProperties)
+    /// Average bitrate in bits per second (from StreamProperties format data)
     pub bitrate: u32,
     /// Number of audio channels (from StreamProperties format data)
     pub channels: u16,
-    /// Codec type identifier (e.g. "audio")
+    /// Codec info string (e.g. "Windows Media Audio 9 Standard")
     pub codec_type: String,
     /// Codec name (e.g. "Windows Media Audio V2")
     pub codec_name: String,
@@ -45,7 +45,7 @@ pub struct ASFInfo {
     pub codec_description: String,
     /// Maximum instantaneous bitrate in bps (from FileProperties)
     pub max_bitrate: Option<u32>,
-    /// Preroll time in 100-nanosecond units (subtracted from play_duration)
+    /// Preroll time in milliseconds (subtracted from play_duration)
     pub preroll: Option<u64>,
     /// Broadcast/seekable flags from FileProperties
     pub flags: Option<u32>,
@@ -355,9 +355,9 @@ impl ASF {
     /// than 512 MB before any allocation occurs, returning
     /// `AudexError::InvalidData` instead.
     ///
-    /// For very large ASF/WMA files you may need to use
-    /// [`crate::limits::ParseLimits::permissive()`], but be aware that
-    /// peak memory usage will be roughly equal to the file size.
+    /// Files larger than this in-memory writer guard cannot currently be saved
+    /// through this path. Peak memory usage for eligible files is roughly equal
+    /// to the file size.
     pub fn save(&mut self) -> Result<()> {
         debug_event!("saving ASF attributes");
         if let Some(path) = self.filename.clone() {
@@ -420,12 +420,11 @@ impl ASF {
     /// # Memory usage
     ///
     /// This method reads the entire file into memory so that the header can be
-    /// resized in place. Peak memory consumption is approximately **2x the
-    /// file size** (the read buffer plus the re-serialized output), bounded by
+    /// resized in place. Peak memory consumption is roughly equal to the file
+    /// size (the header is re-rendered separately but is small), bounded by
     /// `crate::limits::MAX_IN_MEMORY_WRITER_FILE`. For large ASF files this can be
-    /// significant. Prefer the file-path-based [`save`](Self::save) method
-    /// when working with large files on disk, as it can operate with lower
-    /// peak memory by truncating or extending the file in place.
+    /// significant. The file-path-based [`save`](Self::save) method uses
+    /// the same code path internally.
     fn save_to_writer_inner(
         &mut self,
         writer: &mut dyn ReadWriteSeek,
@@ -1437,8 +1436,9 @@ impl FileType for ASF {
 
     /// ASF tags are always present in this format.
     ///
-    /// This method returns an error since tags cannot be added to a format
-    /// that inherently always contains tag metadata.
+    /// The trait-level `add_tags` returns an error since tags already exist.
+    /// Note: the inherent method `ASF::add_tags()` returns `Ok(())` for API
+    /// compatibility; this trait method is only reached via `FileType::add_tags(&mut asf)`.
     ///
     /// # Errors
     ///
@@ -1451,8 +1451,10 @@ impl FileType for ASF {
     /// use audex::FileType;
     ///
     /// let mut asf = ASF::load("file.wma")?;
-    /// // Tags are always present, so add_tags() will fail
-    /// assert!(asf.add_tags().is_err());
+    /// // Inherent method returns Ok (tags already present)
+    /// assert!(asf.add_tags().is_ok());
+    /// // Trait method returns Err
+    /// assert!(FileType::add_tags(&mut asf).is_err());
     /// # Ok::<(), audex::AudexError>(())
     /// ```
     fn add_tags(&mut self) -> Result<()> {

@@ -16,7 +16,7 @@
 //! - **Compression**: Lossy (psychoacoustic model)
 //! - **Bitrate**: 120-500 kbps (quality levels 4-10)
 //! - **Sample Rates**: 32 kHz, 37.8 kHz, 44.1 kHz, 48 kHz
-//! - **Channels**: 1-2 (mono/stereo)
+//! - **Channels**: 1-2 (SV4-7 hardcode stereo, SV8 parses from header)
 //! - **Quality Focus**: Transparency at 180+ kbps
 //! - **File Extension**: `.mpc`
 //! - **MIME Type**: `audio/x-musepack`
@@ -76,7 +76,7 @@ use tokio::fs::File as TokioFile;
 #[cfg(feature = "async")]
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
 
-/// Musepack stream versions 4-7 sample rates
+/// Musepack sample rates (used by stream versions 4-8)
 const RATES: [u32; 4] = [44100, 48000, 37800, 32000];
 
 /// Parse a Musepack SV8 variable-length integer from a reader.
@@ -874,6 +874,11 @@ impl FileType for Musepack {
     /// Creates a new empty tag structure if none exists. If tags already exist,
     /// returns an error.
     ///
+    /// Note: the inherent method `Musepack::add_tags()` returns
+    /// `AudexError::MusepackHeaderError` on failure. This trait method
+    /// returns `AudexError::InvalidOperation` and is reached via
+    /// `FileType::add_tags(&mut mpc)`.
+    ///
     /// # Errors
     ///
     /// Returns `AudexError::InvalidOperation` if tags already exist.
@@ -888,8 +893,6 @@ impl FileType for Musepack {
     /// if mpc.tags.is_none() {
     ///     mpc.add_tags()?;
     /// }
-    /// mpc.set("title", vec!["My Song".to_string()])?;
-    /// mpc.save()?;
     /// # Ok::<(), audex::AudexError>(())
     /// ```
     fn add_tags(&mut self) -> Result<()> {

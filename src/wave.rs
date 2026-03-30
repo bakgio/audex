@@ -1,8 +1,8 @@
 //! WAV/WAVE format support
 //!
 //! Comprehensive support for the Microsoft WAVE audio file format with ID3v2 tag support.
-//! WAVE files use the RIFF container format to store uncompressed or losslessly compressed
-//! audio data.
+//! WAVE files use the RIFF container format to store uncompressed, lossless, or lossy
+//! audio data depending on the codec in the `fmt ` chunk.
 //!
 //! # Format Overview
 //!
@@ -155,7 +155,7 @@ pub struct RiffChunk {
     pub offset: u64,
     /// Absolute file offset where chunk data begins (after the 8-byte header)
     pub data_offset: u64,
-    /// Actual data size (may differ from `size` due to padding)
+    /// Actual data size (same as `size` in this implementation)
     pub data_size: u32,
 }
 

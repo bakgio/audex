@@ -190,8 +190,9 @@ pub const BYTEARRAY: u16 = 0x0001;
 
 /// Boolean attribute type (0x0002)
 ///
-/// Represents a true/false value. Stored as a 32-bit value where
-/// 0 = false and any non-zero value = true.
+/// Represents a true/false value. Stored as a 32-bit value in Extended Content
+/// Description context, or a 16-bit value in Metadata/MetadataLibrary context.
+/// Exactly 1 = true and all other values (including other non-zero) = false.
 pub const BOOL: u16 = 0x0002;
 
 /// Double Word (32-bit) attribute type (0x0003)

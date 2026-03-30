@@ -19,6 +19,7 @@ use serde::{Deserialize, Serialize};
 /// normalization functions to apply the correct parsing rules.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[non_exhaustive]
 pub enum TagSystem {
     /// ID3v2 (used by MP3, AIFF, WAV, DSF, DSDIFF)
     ID3v2,
